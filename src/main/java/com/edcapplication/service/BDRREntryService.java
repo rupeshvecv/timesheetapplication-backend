@@ -1,10 +1,14 @@
 package com.edcapplication.service;
 
+import java.util.ArrayList;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.edcapplication.dao.BDRREntryDao;
+import com.edcapplication.exception.BadRequestException;
+import com.edcapplication.exception.MailSendException;
+import com.edcapplication.exception.ResourceNotFoundException;
 import com.edcapplication.model.BDRREntry;
 import com.edcapplication.model.Equipment;
 import com.edcapplication.model.Problem;
@@ -33,28 +37,49 @@ public class BDRREntryService {
 
     @Autowired
     private ProblemRepository problemRepository;
+    
+    @Autowired
+    private MailService mailService; // <-- Injected mail service
 
     public List<BDRREntry> getBDRREntries() {
         return bdrrEntryRepository.findAll();
     }
 
-    public BDRREntry getBDRREntryById(Integer id) {
+    public BDRREntry getBDRREntryById(Long id) {
         return bdrrEntryRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("BDRR Entry not found with ID: " + id));
+                //.orElseThrow(() -> new RuntimeException("BDRR Entry not found with ID: " + id));
+        		.orElseThrow(() -> new ResourceNotFoundException("BDRR Entry not found with ID: " + id));
     }
 
     public BDRREntry createBDRREntry(BDRREntryDao dao) {
+    	
+    	if (dao.getTestbedId() == null || dao.getEquipmentId() == null) {
+            throw new BadRequestException("Missing required fields in request");
+        }
+    	
         TestBed testBed = testBedRepository.findById(dao.getTestbedId())
-                .orElseThrow(() -> new RuntimeException("TestBed not found"));
+                //.orElseThrow(() -> new RuntimeException("TestBed not found"));
+        		.orElseThrow(() -> new ResourceNotFoundException("TestBed not found"));
         Equipment equipment = equipmentRepository.findById(dao.getEquipmentId())
-                .orElseThrow(() -> new RuntimeException("Equipment not found"));
+                //.orElseThrow(() -> new RuntimeException("Equipment not found"));
+        		.orElseThrow(() -> new ResourceNotFoundException("Equipment not found"));
         SubEquipment subEquipment = subEquipmentRepository.findById(dao.getSubEquipmentId())
-                .orElseThrow(() -> new RuntimeException("SubEquipment not found"));
+                //.orElseThrow(() -> new RuntimeException("SubEquipment not found"));
+        		.orElseThrow(() -> new ResourceNotFoundException("SubEquipment not found"));
         Problem problem = problemRepository.findById(dao.getProblemId())
-                .orElseThrow(() -> new RuntimeException("Problem not found"));
+                //.orElseThrow(() -> new RuntimeException("Problem not found"));
+        		.orElseThrow(() -> new ResourceNotFoundException("Problem not found"));
+        
+        //Step 1: Generate dynamic BDRR number
+        //long count = bdrrEntryRepository.count(); // total entries in the table
+        //String generatedBdrrNumber = "BDRR-" + (count + 1);
+        Long maxId = bdrrEntryRepository.findMaxId().orElse(0L);
+        String generatedBdrrNumber = "BDRR-" + (maxId + 1);
 
         BDRREntry entry = new BDRREntry();
-        entry.setBdrrNumber(dao.getBdrrNumber());
+        //entry.setBdrrNumber(dao.getBdrrNumber());
+        entry.setBdrrNumber(generatedBdrrNumber); // ✅ dynamic value
+        
         entry.setStatus(dao.getStatus());
         entry.setRaisedOn(dao.getRaisedOn());
         entry.setRaisedBy(dao.getRaisedBy());
@@ -83,20 +108,35 @@ public class BDRREntryService {
         entry.setInitialAnalysis(dao.getInitialAnalysis());
         entry.setWorkDoneDescription(dao.getWorkDoneDescription());
 
-        return bdrrEntryRepository.save(entry);
-    }
+        //return bdrrEntryRepository.save(entry);
+        //Save entry
+        BDRREntry savedEntry = bdrrEntryRepository.save(entry);
+        
+        try {
+            sendCreationMail(savedEntry, dao, testBed, equipment, subEquipment, problem);
+        } catch (Exception e) {
+            throw new MailSendException("Failed to send creation email", e);
+        }
 
-    public BDRREntry updateBDRREntry(Integer id, BDRREntryDao dao) {
-        BDRREntry existing = getBDRREntryById(id);
+        return savedEntry;
+    }
+    
+    public BDRREntry updateBDRREntry(Long id, BDRREntryDao dao) {
+    	
+    	if (dao.getTestbedId() == null || dao.getEquipmentId() == null || dao.getProblemId() == null) {
+            throw new BadRequestException("Missing required IDs for TestBed, Equipment, or Problem");
+        }
+    	
+    	BDRREntry existing = getBDRREntryById(id);
 
         TestBed testBed = testBedRepository.findById(dao.getTestbedId())
-                .orElseThrow(() -> new RuntimeException("TestBed not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("TestBed not found"));
         Equipment equipment = equipmentRepository.findById(dao.getEquipmentId())
-                .orElseThrow(() -> new RuntimeException("Equipment not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Equipment not found"));
         SubEquipment subEquipment = subEquipmentRepository.findById(dao.getSubEquipmentId())
-                .orElseThrow(() -> new RuntimeException("SubEquipment not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("SubEquipment not found"));
         Problem problem = problemRepository.findById(dao.getProblemId())
-                .orElseThrow(() -> new RuntimeException("Problem not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Problem not found"));
 
         existing.setBdrrNumber(dao.getBdrrNumber());
         existing.setStatus(dao.getStatus());
@@ -127,13 +167,107 @@ public class BDRREntryService {
         existing.setInitialAnalysis(dao.getInitialAnalysis());
         existing.setWorkDoneDescription(dao.getWorkDoneDescription());
 
-        return bdrrEntryRepository.save(existing);
+        //return bdrrEntryRepository.save(existing);
+        
+        //Save
+        BDRREntry savedEntry = bdrrEntryRepository.save(existing);
+        
+        //Send mail if status is Closed or closing date set
+        if ("Closed".equalsIgnoreCase(dao.getStatus()) || dao.getClosingDate() != null) {
+            try {
+                sendClosingMail(savedEntry, dao, testBed, equipment, subEquipment, problem);
+            } catch (Exception e) {
+                throw new MailSendException("Failed to send closing email", e);
+            }
+        }
+        return savedEntry;
     }
 
-    public void deleteBDRREntry(Integer id) {
+    public void deleteBDRREntry(Long id) {
         if (!bdrrEntryRepository.existsById(id)) {
-            throw new RuntimeException("BDRR Entry not found with ID: " + id);
+            throw new ResourceNotFoundException("BDRR Entry not found with ID: " + id);
         }
         bdrrEntryRepository.deleteById(id);
     }
+    
+    private void sendCreationMail(BDRREntry entry, BDRREntryDao dao, TestBed testBed, Equipment equipment,
+			SubEquipment subEquipment, Problem problem) {
+		String subject = "New BDRR Entry Created - #" + entry.getBdrrNumber();
+		String body = """
+				Hello Team,
+				A new BDRR entry has been created:
+				BDRR No: %s
+				Status: %s
+				TestBed: %s
+				Equipment: %s - %s
+				Problem: %s
+				Raised By: %s (Shift: %s)
+				Raised On: %s
+
+				Breakdown Description: %s
+				Initial Analysis: %s
+
+				Please log in for full details.
+				Regards,
+				BDRR System
+				""".formatted(entry.getBdrrNumber(), dao.getStatus(), testBed.getName(), equipment.getEquipmentName(),
+				subEquipment.getSubequipmentName(), problem.getProblemName(), dao.getRaisedBy(), dao.getShift(),
+				dao.getRaisedOn(), dao.getBreakDownDescription(), dao.getInitialAnalysis());
+
+		List<String> toList = new ArrayList<>();
+		if (dao.getRaisedBy() != null)
+			toList.add(dao.getRaisedBy());
+		if (dao.getAreaAttender() != null)
+			toList.add(dao.getAreaAttender());
+		
+		  //BCC recipients
+        String[] bcc = new String[] {
+            "rkraghuvanshi@vecv.in",
+            "askushwah2@VECV.IN"
+        };
+
+		if (!toList.isEmpty()) {
+			mailService.sendMail(toList.toArray(new String[0]), subject, body, bcc);
+		}
+	}
+    
+    private void sendClosingMail(BDRREntry entry, BDRREntryDao dao, TestBed testBed, Equipment equipment,
+			SubEquipment subEquipment, Problem problem) {
+
+		String subject = "BDRR Closed - #" + entry.getBdrrNumber();
+		String body = """
+				Hello Team,
+				The following BDRR entry has been CLOSED:
+				BDRR No: %s
+				TestBed: %s
+				Equipment: %s - %s
+				Problem: %s
+				Root Cause: %s
+				Action Taken: %s
+				Closed By: %s
+				Closing Date: %s
+				Remarks: %s
+
+				Regards,
+				BDRR System
+				""".formatted(entry.getBdrrNumber(), testBed.getName(), equipment.getEquipmentName(),
+				subEquipment.getSubequipmentName(), problem.getProblemName(), dao.getSolutionRootCause(),
+				dao.getSolutionActionTaken(), dao.getSolutionBy(), dao.getClosingDate(), dao.getWorkDoneDescription());
+
+		List<String> toList = new ArrayList<>();
+		if (dao.getRaisedBy() != null)
+			toList.add(dao.getRaisedBy());
+		if (dao.getAreaAttender() != null)
+			toList.add(dao.getAreaAttender());
+
+		//BCC recipients
+        String[] bcc = new String[] {
+            "rkraghuvanshi@vecv.in",
+            "askushwah2@VECV.IN"
+        };
+
+		if (!toList.isEmpty()) {
+			mailService.sendMail(toList.toArray(new String[0]), subject, body, bcc);
+		}
+	}
 }

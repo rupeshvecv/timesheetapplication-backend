@@ -1,17 +1,17 @@
 package com.edcapplication.dao;
 
 public class EquipmentDao {
-    private int id;
+    private Long id;
     private String equipmentName;
 
     public EquipmentDao() {}
 
-    public EquipmentDao(int id, String equipmentName) {
+    public EquipmentDao(Long id, String equipmentName) {
         this.id = id;
         this.equipmentName = equipmentName;
     }
 
-    public int getId() {
+    public Long getId() {
         return id;
     }
 
@@ -19,7 +19,7 @@ public class EquipmentDao {
         return equipmentName;
     }
 
-    public void setId(int id) {
+    public void setId(Long id) {
         this.id = id;
     }
 

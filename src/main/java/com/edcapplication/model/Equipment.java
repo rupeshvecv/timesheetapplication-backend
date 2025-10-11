@@ -17,7 +17,7 @@ public class Equipment {
 
 	@Id
 	@GeneratedValue(strategy=GenerationType.AUTO)
-	private int id;
+	private Long id;
 	
 	@Column(name= "equipment_name")
 	private String equipmentName;
@@ -40,17 +40,17 @@ public class Equipment {
 	 * this.problems = problems; }
 	 */
 	
-	public Equipment(int id, String equipmentName) {
+	public Equipment(Long id, String equipmentName) {
 		super();
 		this.id = id;
 		this.equipmentName = equipmentName;
 	}
 
-	public int getId() {
+	public Long getId() {
 		return id;
 	}
 
-	public void setId(int id) {
+	public void setId(Long id) {
 		this.id = id;
 	}
 

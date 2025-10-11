@@ -3,6 +3,8 @@ package com.edcapplication.controller;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -26,40 +28,51 @@ public class EquipmentController {
 	EquipmentService equipmentService;
 	
 	/*
-	 * @GetMapping("/equipments") public List<Equipment> getEquipments() { return
-	 * equipmentService.getEquipments(); }
+	 * @GetMapping("/equipments") public List<EquipmentDao> getEquipments() { return
+	 * equipmentService.getAllEquipments(); }
 	 */
-
+	
 	@GetMapping("/equipments")
-    public List<EquipmentDao> getEquipments() {
-        return equipmentService.getAllEquipments();
+	public ResponseEntity<List<EquipmentDao>> getAllEquipments() {
+        List<EquipmentDao> equipments = equipmentService.getAllEquipments();
+        return ResponseEntity.ok(equipments);
     }
 	
-	@GetMapping("/equipments/{id}")
 	/*
-	 * public Equipment getTeamById(@PathVariable("id") Integer equipmentId) {
-	 * return equipmentService.getEquipmentById(equipmentId); }
+	 * @GetMapping("/equipments/{id}") public EquipmentDao
+	 * getEquipmentById(@PathVariable Long id) { return
+	 * equipmentService.getEquipmentById(id); }
 	 */
-    public EquipmentDao getEquipmentById(@PathVariable int id) {
-        return equipmentService.getEquipmentById(id);
+	@GetMapping("/equipments/{id}")
+	public ResponseEntity<EquipmentDao> getEquipmentById(@PathVariable("id") Long id) {
+        EquipmentDao equipment = equipmentService.getEquipmentById(id);
+        return ResponseEntity.ok(equipment);
     }
 	
-	@PostMapping(("/equipments"))
-	public EquipmentDao createEquipment(@RequestBody Equipment equipment) {
-        return equipmentService.addEquipment(equipment);
-    }
 	/*
-	 * public Equipment addEquipment(@RequestBody Equipment equipment) { return
+	 * @PostMapping(("/equipments")) public EquipmentDao
+	 * createEquipment(@RequestBody Equipment equipment) { return
 	 * equipmentService.addEquipment(equipment); }
 	 */
-	
-	@PutMapping(("/equipments"))
-	public Equipment updateEquipment(@RequestBody Equipment equipment) {
-        return equipmentService.updateEquipment(equipment);
+	@PostMapping(("/equipments"))
+	public ResponseEntity<EquipmentDao> addEquipment(@RequestBody Equipment equipment) {
+        EquipmentDao created = equipmentService.addEquipment(equipment);
+        return new ResponseEntity<>(created, HttpStatus.CREATED);
     }
 	
+	/*
+	 * @PutMapping(("/equipments")) public Equipment updateEquipment(@RequestBody
+	 * Equipment equipment) { return equipmentService.updateEquipment(equipment); }
+	 */
+	@PutMapping("/equipments/{id}")
+	 public ResponseEntity<Equipment> updateEquipment(@PathVariable("id") Long id,@RequestBody Equipment equipment) {
+
+	        Equipment updated = equipmentService.updateEquipment(id, equipment);
+	        return ResponseEntity.ok(updated);
+	    }
+	
 	@DeleteMapping("/equipments/{id}")
-	public void deleteEquipment(@PathVariable Integer id) {
+	public void deleteEquipment(@PathVariable("id") Long id) {
 		System.out.println("EquipmentController.deleteEquipment(id) "+id);
 		equipmentService.deleteEquipment(id);
     }

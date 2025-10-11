@@ -11,8 +11,9 @@ import jakarta.persistence.Embeddable;
 public class TestBedEntryEmbeddedId implements Serializable {
 
 	private static final long serialVersionUID = 1L;
+	
     @Column(name = "testbed_id")
-    private int testbedId;
+    private Long testbedId;
 
     @Column(name = "raised_on")
     private LocalDate raisedOn;
@@ -25,18 +26,18 @@ public class TestBedEntryEmbeddedId implements Serializable {
     }
 
     //Constructor that matches your usage
-    public TestBedEntryEmbeddedId(int testbedId, LocalDate raisedOn, String shift) {
+    public TestBedEntryEmbeddedId(Long testbedId, LocalDate raisedOn, String shift) {
         this.testbedId = testbedId;
         this.raisedOn = raisedOn;
         this.shift = shift;
     }
 
     // Getters and setters
-    public int getTestbedId() {
+    public Long getTestbedId() {
         return testbedId;
     }
 
-    public void setTestbedId(int testbedId) {
+    public void setTestbedId(Long testbedId) {
         this.testbedId = testbedId;
     }
 

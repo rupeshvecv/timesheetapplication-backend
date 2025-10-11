@@ -6,7 +6,7 @@ import org.springframework.stereotype.Repository;
 import com.edcapplication.model.TestBed;
 
 @Repository
-public interface TestBedRepository extends CrudRepository<TestBed, Integer> {
+public interface TestBedRepository extends CrudRepository<TestBed, Long> {
 
 }
 

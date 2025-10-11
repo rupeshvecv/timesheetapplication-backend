@@ -1,9 +1,14 @@
 package com.edcapplication.service;
 
 import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.edcapplication.dao.TestBedEntryDao;
+import com.edcapplication.exception.BadRequestException;
+import com.edcapplication.exception.MailSendException;
+import com.edcapplication.exception.ResourceNotFoundException;
 import com.edcapplication.model.Project;
 import com.edcapplication.model.TestBed;
 import com.edcapplication.model.TestBedEntry;
@@ -18,6 +23,9 @@ public class TestBedEntryService {
     private final TestBedEntryRepository testBedEntryRepository;
     private final TestBedRepository testBedRepository;
     private final ProjectRepository projectRepository;
+    
+    @Autowired
+    private MailService mailService;  //<-- Mail service
 
     public TestBedEntryService(TestBedEntryRepository testBedEntryRepository,
                                TestBedRepository testBedRepository,
@@ -33,14 +41,21 @@ public class TestBedEntryService {
 
     public TestBedEntry getTestBedEntryById(TestBedEntryEmbeddedId id) {
         return testBedEntryRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("TestBedEntry not found for id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("TestBedEntry not found for id: " + id));
     }
 
     public TestBedEntry createTestBedEntry(TestBedEntryDao dao) {
+    	if (dao.getTestbedId() == null || dao.getRaisedOn() == null || dao.getShift() == null) {
+            throw new BadRequestException("Missing required fields: testbedId, raisedOn, or shift");
+        }
         TestBed testBed = testBedRepository.findById(dao.getTestbedId())
-                .orElseThrow(() -> new RuntimeException("TestBed not found"));
-        Project project = projectRepository.findById(dao.getProjectId())
-                .orElse(null); // project is optional
+                .orElseThrow(() -> new ResourceNotFoundException("TestBed not found"));
+        
+        Project project = null;
+        if (dao.getProjectId() != null) {
+            project = projectRepository.findById(dao.getProjectId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Project not found with ID: " + dao.getProjectId()));
+        }
 
         TestBedEntry entry = new TestBedEntry();
         entry.setId(new TestBedEntryEmbeddedId(dao.getTestbedId(), dao.getRaisedOn(), dao.getShift()));
@@ -67,16 +82,34 @@ public class TestBedEntryService {
         entry.setTotalSum(dao.getTotalSum());
         entry.setEngineChangeoverTime(dao.getEngineChangeoverTime());
 
-        return testBedEntryRepository.save(entry);
+        //return testBedEntryRepository.save(entry);
+        
+        //Save entry
+        TestBedEntry savedEntry = testBedEntryRepository.save(entry);
+
+        //Send notification mail
+        try {
+            sendCreationMail(testBed, dao);
+        } catch (Exception e) {
+            throw new MailSendException("Failed to send TestBedEntry creation email", e);
+        }
+
+        return savedEntry;
     }
 
     public TestBedEntry updateTestBedEntry(TestBedEntryDao dao) {
+    	if (dao.getTestbedId() == null || dao.getRaisedOn() == null || dao.getShift() == null) {
+            throw new BadRequestException("Missing required identifiers for update");
+        }
         TestBedEntryEmbeddedId id = new TestBedEntryEmbeddedId(dao.getTestbedId(), dao.getRaisedOn(), dao.getShift());
         TestBedEntry existing = testBedEntryRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("TestBedEntry not found for update"));
+                .orElseThrow(() -> new ResourceNotFoundException("TestBedEntry not found for update"));
 
-        Project project = projectRepository.findById(dao.getProjectId())
-                .orElse(null); // optional
+        Project project = null;
+        if (dao.getProjectId() != null) {
+            project = projectRepository.findById(dao.getProjectId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Project not found with ID: " + dao.getProjectId()));
+        }
 
         existing.setTime(dao.getTime());
         existing.setRaisedBy(dao.getRaisedBy());
@@ -106,8 +139,39 @@ public class TestBedEntryService {
 
     public void deleteTestBedEntry(TestBedEntryEmbeddedId id) {
         if (!testBedEntryRepository.existsById(id)) {
-            throw new RuntimeException("TestBed Entry not found with ID: " + id);
+            throw new ResourceNotFoundException("TestBed Entry not found with ID: " + id);
         }
         testBedEntryRepository.deleteById(id);
+    }
+    
+    //Mail sender
+    private void sendCreationMail(TestBed testBed, TestBedEntryDao dao) {
+        String subject = "New TestBed Entry Created";
+        String body = """
+                Hello Team,
+                A new TestBed entry has been created.
+                TestBed: %s
+                Raised By: %s
+                Shift: %s
+                Date: %s
+                Please check the system for more details.
+
+                Regards,
+                EDC System
+                """.formatted(
+                testBed.getName(),
+                dao.getRaisedBy(),
+                dao.getShift(),
+                dao.getRaisedOn()
+        );
+
+      //BCC recipients
+        String[] bcc = new String[] {
+            "rkraghuvanshi@vecv.in",
+            "askushwah2@VECV.IN"
+        };
+        if (dao.getTestBedUser() != null) {
+			mailService.sendMail(new String[]{dao.getTestBedUser()}, subject, body, bcc);
+		}
     }
 }

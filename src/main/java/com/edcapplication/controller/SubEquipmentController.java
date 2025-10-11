@@ -3,6 +3,7 @@ package com.edcapplication.controller;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -35,7 +36,7 @@ public class SubEquipmentController {
     }
 	
 	@GetMapping("/subEquipments/{id}")
-	public SubEquipment getTeamById(@PathVariable("id") Integer subEquipmentId) {
+	public SubEquipment getTeamById(@PathVariable("id") Long subEquipmentId) {
 		return subEquipmentService.getSubEquipmentById(subEquipmentId);
 	}
 	
@@ -48,14 +49,21 @@ public class SubEquipmentController {
         return subEquipmentService.addSubEquipment(subEquipmentDao);
     }
 	
-	@PutMapping(("/subEquipments"))
-	public SubEquipment updateSubEquipment(@RequestBody SubEquipment subEquipment) {
-        return subEquipmentService.updateSubEquipment(subEquipment);
+	@PutMapping("/subEquipments/{id}")
+	public SubEquipmentDao updateSubEquipment(@PathVariable("id") Long subEquipmentId,@RequestBody SubEquipmentDao subEquipmentDao) {
+        return subEquipmentService.updateSubEquipment(subEquipmentId,subEquipmentDao);
     }
 	
 	@DeleteMapping("/subEquipments/{id}")
-	public void deleteSubEquipment(@PathVariable Integer id) {
+	public void deleteSubEquipment(@PathVariable("id") Long id) {
 		System.out.println("SubEquipmentController.deleteSubEquipment(id) "+id);
 		subEquipmentService.deleteSubEquipment(id);
+    }
+	
+	 //Get all SubEquipments by Equipment ID
+    @GetMapping("/subEquipments/equipment/{equipmentId}")
+    public ResponseEntity<List<SubEquipmentDao>> getSubEquipmentsByEquipmentId(@PathVariable Long equipmentId) {
+        List<SubEquipmentDao> subEquipments = subEquipmentService.getSubEquipmentsByEquipmentId(equipmentId);
+        return ResponseEntity.ok(subEquipments);
     }
 }

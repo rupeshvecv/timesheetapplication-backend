@@ -15,7 +15,7 @@ public class SubEquipment {
 
 	@Id
 	@GeneratedValue(strategy=GenerationType.AUTO)
-	private int id;
+	private Long id;
 	
 	@Column(name= "subequipment_name")
 	private String subequipmentName;
@@ -28,18 +28,18 @@ public class SubEquipment {
 		super();
 	}
 	
-	public SubEquipment(int id, String subequipmentName, Equipment equipment) {
+	public SubEquipment(Long id, String subequipmentName, Equipment equipment) {
 		super();
 		this.id = id;
 		this.subequipmentName = subequipmentName;
 		this.equipment = equipment;
 	}
 
-	public int getId() {
+	public Long getId() {
 		return id;
 	}
 
-	public void setId(int id) {
+	public void setId(Long id) {
 		this.id = id;
 	}
 

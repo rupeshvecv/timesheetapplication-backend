@@ -1,19 +1,19 @@
 package com.edcapplication.dao;
 
 public class ProblemDao {
-    private int id;
+    private Long id;
     private String problemName;
-    private int equipmentId;
+    private Long equipmentId;
 
     public ProblemDao() {}
 
-    public ProblemDao(int id, String problemName, int equipmentId) {
+    public ProblemDao(Long id, String problemName, Long equipmentId) {
         this.id = id;
         this.problemName = problemName;
         this.equipmentId = equipmentId;
     }
 
-    public int getId() {
+    public Long getId() {
         return id;
     }
 
@@ -21,11 +21,11 @@ public class ProblemDao {
         return problemName;
     }
 
-    public int getEquipmentId() {
+    public Long getEquipmentId() {
         return equipmentId;
     }
 
-    public void setId(int id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
@@ -33,7 +33,7 @@ public class ProblemDao {
         this.problemName = problemName;
     }
 
-    public void setEquipmentId(int equipmentId) {
+    public void setEquipmentId(Long equipmentId) {
         this.equipmentId = equipmentId;
     }
 }

@@ -9,10 +9,10 @@ public class BDRREntryDao {
     private LocalDate raisedOn;
     private String raisedBy;
     private String shift;
-    private int testbedId;
-    private int equipmentId;
-    private int subEquipmentId;
-    private int problemId;
+    private Long testbedId;
+    private Long equipmentId;
+    private Long subEquipmentId;
+    private Long problemId;
     private String testAffected;
     private String alternateArrangement;
     private String suggestion;
@@ -36,8 +36,8 @@ public class BDRREntryDao {
     public BDRREntryDao() {
     }
 
-    public BDRREntryDao(String bdrrNumber, String status, LocalDate raisedOn, String raisedBy, String shift, int testbedId,
-                        int equipmentId, int subEquipmentId, int problemId, String testAffected, String alternateArrangement,
+    public BDRREntryDao(String bdrrNumber, String status, LocalDate raisedOn, String raisedBy, String shift, Long testbedId,
+    		Long equipmentId, Long subEquipmentId, Long problemId, String testAffected, String alternateArrangement,
                         String suggestion, String attender, String solutionRootCause, String solutionActionTaken, String solutionBy,
                         LocalDate solutionGivenOn, LocalDate bdrrOfDate, String areaAttender, LocalDate targetDate, LocalDate closingDate,
                         String partUsed, String partNumber, String partDescriptions, String quantity, String breakDownDescription,
@@ -114,35 +114,35 @@ public class BDRREntryDao {
         this.shift = shift;
     }
 
-    public int getTestbedId() {
+    public Long getTestbedId() {
         return testbedId;
     }
 
-    public void setTestbedId(int testbedId) {
+    public void setTestbedId(Long testbedId) {
         this.testbedId = testbedId;
     }
 
-    public int getEquipmentId() {
+    public Long getEquipmentId() {
         return equipmentId;
     }
 
-    public void setEquipmentId(int equipmentId) {
+    public void setEquipmentId(Long equipmentId) {
         this.equipmentId = equipmentId;
     }
 
-    public int getSubEquipmentId() {
+    public Long getSubEquipmentId() {
         return subEquipmentId;
     }
 
-    public void setSubEquipmentId(int subEquipmentId) {
+    public void setSubEquipmentId(Long subEquipmentId) {
         this.subEquipmentId = subEquipmentId;
     }
 
-    public int getProblemId() {
+    public Long getProblemId() {
         return problemId;
     }
 
-    public void setProblemId(int problemId) {
+    public void setProblemId(Long problemId) {
         this.problemId = problemId;
     }
 

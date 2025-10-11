@@ -18,7 +18,7 @@ public class BDRREntry {
 
 	@Id
 	@GeneratedValue(strategy=GenerationType.AUTO)
-	private int id;
+	private Long id;
 	
 	@Column(name= "bdrr_number")
 	private String bdrrNumber;
@@ -39,15 +39,15 @@ public class BDRREntry {
     @JoinColumn(name = "testbed_id")  //FK column in bdrr_entry table
     private TestBed testBed;
 	
-	@OneToOne
+	@ManyToOne
     @JoinColumn(name = "equipment_id")
 	private Equipment equipment;
 	
-	@OneToOne
+	@ManyToOne
     @JoinColumn(name = "subequipment_id")
 	private SubEquipment subEquipment;
 	
-	@OneToOne
+	@ManyToOne
     @JoinColumn(name = "problem_id")
 	private Problem problem;
 	
@@ -111,7 +111,7 @@ public class BDRREntry {
 	public BDRREntry() {
 		super();
 	}
-	public BDRREntry(int id, String bdrrNumber, String status, LocalDate raisedOn, String raisedBy, String shift,
+	public BDRREntry(Long id, String bdrrNumber, String status, LocalDate raisedOn, String raisedBy, String shift,
 			TestBed testBed, Equipment equipment, SubEquipment subEquipment, Problem problem, String testAffected,
 			String alternateArrangement, String suggestion, String attender, String solutionRootCause,
 			String solutionActionTaken, String solutionBy, LocalDate solutionGivenOn, LocalDate bdrrOfDate,
@@ -151,11 +151,11 @@ public class BDRREntry {
 	}
 
 
-	public int getId() {
+	public Long getId() {
 		return id;
 	}
 
-	public void setId(int id) {
+	public void setId(Long id) {
 		this.id = id;
 	}
 

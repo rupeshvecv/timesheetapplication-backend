@@ -8,5 +8,6 @@ import com.edcapplication.model.TestBedEntryEmbeddedId;
 
 @Repository
 public interface TestBedEntryRepository extends JpaRepository<TestBedEntry, TestBedEntryEmbeddedId> {
+	boolean  existsById(TestBedEntryEmbeddedId id);
 
 }

@@ -30,8 +30,8 @@ public class TestBedController {
 	}
 	
 	@GetMapping("/testBeds/{id}")
-	public TestBed getTeamById(@PathVariable("id") Integer testBedId) {
-		return testBedService.getTestBedById(testBedId);
+	public TestBed getTeamById(@PathVariable Long id) {
+		return testBedService.getTestBedById(id);
 	}
 	
 	@PostMapping(("/testBeds"))
@@ -40,12 +40,12 @@ public class TestBedController {
     }
 	
 	@PutMapping("/testBeds/{id}")
-    public TestBed updateTestBed(@PathVariable int id, @RequestBody TestBed updatedTestBed) {
+    public TestBed updateTestBed(@PathVariable Long id, @RequestBody TestBed updatedTestBed) {
         return testBedService.updateTestBed(id, updatedTestBed);
     }
 	
 	@DeleteMapping("/testBeds/{id}")
-	public void deleteTestBed(@PathVariable Integer id) {
+	public void deleteTestBed(@PathVariable Long id) {
 		System.out.println("TestBedController.deleteTestBed(id) "+id);
 		testBedService.deleteTestBed(id);
     }

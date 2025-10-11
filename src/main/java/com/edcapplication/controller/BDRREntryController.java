@@ -23,7 +23,7 @@ public class BDRREntryController {
     }
 
     @GetMapping("/bdrrEntries/{id}")
-    public BDRREntry getBDRREntryById(@PathVariable("id") Integer id) {
+    public BDRREntry getBDRREntryById(@PathVariable("id") Long id) {
         return bdrrEntryService.getBDRREntryById(id);
     }
 
@@ -33,12 +33,12 @@ public class BDRREntryController {
     }
 
     @PutMapping("/bdrrEntries/{id}")
-    public BDRREntry updateBDRREntry(@PathVariable Integer id, @RequestBody BDRREntryDao dao) {
+    public BDRREntry updateBDRREntry(@PathVariable Long id, @RequestBody BDRREntryDao dao) {
         return bdrrEntryService.updateBDRREntry(id, dao);
     }
 
     @DeleteMapping("/bdrrEntries/{id}")
-    public void deleteBDRREntry(@PathVariable Integer id) {
+    public void deleteBDRREntry(@PathVariable Long id) {
         bdrrEntryService.deleteBDRREntry(id);
     }
 }

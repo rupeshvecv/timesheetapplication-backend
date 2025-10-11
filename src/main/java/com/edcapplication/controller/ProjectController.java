@@ -30,7 +30,7 @@ public class ProjectController {
 	}
 	
 	@GetMapping("/projects/{id}")
-	public Project getTeamById(@PathVariable("id") Integer projectId) {
+	public Project getProjectById(@PathVariable("id") Long projectId) {
 		return projectService.getProjectById(projectId);
 	}
 	
@@ -45,7 +45,7 @@ public class ProjectController {
     }
 	
 	@DeleteMapping("/projects/{id}")
-	public void deleteProject(@PathVariable Integer id) {
+	public void deleteProject(@PathVariable("id") Long id) {
 		System.out.println("ProjectController.deleteProject(id) "+id);
 		projectService.deleteProject(id);
     }

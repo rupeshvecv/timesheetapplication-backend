@@ -4,14 +4,14 @@ import java.time.LocalDate;
 
 public class TestBedEntryDao {
 
-    private int testbedId;
+    private Long testbedId;
     private LocalDate raisedOn;
     private String shift;
 
     private String time;
     private String raisedBy;
     private String testBedUser;
-    private int projectId;
+    private Long projectId;
 
     private double plannedHours;
     private double uptimeHours;
@@ -40,11 +40,11 @@ public class TestBedEntryDao {
     private String engineChangeoverTime;
 
     // Getters and Setters
-    public int getTestbedId() {
+    public Long getTestbedId() {
         return testbedId;
     }
 
-    public void setTestbedId(int testbedId) {
+    public void setTestbedId(Long testbedId) {
         this.testbedId = testbedId;
     }
 
@@ -88,11 +88,11 @@ public class TestBedEntryDao {
         this.testBedUser = testBedUser;
     }
 
-    public int getProjectId() {
+    public Long getProjectId() {
         return projectId;
     }
 
-    public void setProjectId(int projectId) {
+    public void setProjectId(Long projectId) {
         this.projectId = projectId;
     }
 

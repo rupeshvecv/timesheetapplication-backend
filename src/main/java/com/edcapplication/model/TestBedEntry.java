@@ -9,11 +9,6 @@ public class TestBedEntry {
     @EmbeddedId
     private TestBedEntryEmbeddedId id;
 
-    @ManyToOne
-    @MapsId("testbedId") //Maps the embedded ID field to the actual FK
-    @JoinColumn(name = "testbed_id")
-    private TestBed testBed;
-
     @Column(name = "time")
     private String time;
 
@@ -23,7 +18,7 @@ public class TestBedEntry {
     @Column(name = "test_bed_user")
     private String testBedUser;
 
-    @OneToOne
+    @ManyToOne
     @JoinColumn(name = "project_id")
     private Project project;
 
@@ -84,16 +79,28 @@ public class TestBedEntry {
     // --- Constructors ---
     public TestBedEntry() {}
 
-    public TestBedEntry(TestBedEntryEmbeddedId id, TestBed testBed, String time, String raisedBy,
-                        Project project, String testBedUser, double plannedHours, double uptimeHours,
-                        double utilizationHours, double validationHours, String runningInRemarks,
-                        double runningInHours, String setUpRemarks, double setUpHours,
-                        String workonEngineRemarks, double workonEngineHours, String breakDownRemarks,
-                        double breakDownHours, String noManPowerRemarks, double noManPowerHours,
-                        String anyOtherRemarks, double anyOtherHours, double totalSum,
-                        String engineChangeoverTime) {
+	/*
+	 * public TestBedEntry(TestBedEntryEmbeddedId id, TestBed testBed, String time,
+	 * String raisedBy, Project project, String testBedUser, double plannedHours,
+	 * double uptimeHours, double utilizationHours, double validationHours, String
+	 * runningInRemarks, double runningInHours, String setUpRemarks, double
+	 * setUpHours, String workonEngineRemarks, double workonEngineHours, String
+	 * breakDownRemarks, double breakDownHours, String noManPowerRemarks, double
+	 * noManPowerHours, String anyOtherRemarks, double anyOtherHours, double
+	 * totalSum, String engineChangeoverTime) {
+	 */
+    	
+    	
+    	 public TestBedEntry(TestBedEntryEmbeddedId id, String time, String raisedBy,
+                 Project project, String testBedUser, double plannedHours, double uptimeHours,
+                 double utilizationHours, double validationHours, String runningInRemarks,
+                 double runningInHours, String setUpRemarks, double setUpHours,
+                 String workonEngineRemarks, double workonEngineHours, String breakDownRemarks,
+                 double breakDownHours, String noManPowerRemarks, double noManPowerHours,
+                 String anyOtherRemarks, double anyOtherHours, double totalSum,
+                 String engineChangeoverTime) {
         this.id = id;
-        this.testBed = testBed;
+        //this.testBed = testBed;
         this.time = time;
         this.raisedBy = raisedBy;
         this.project = project;
@@ -126,13 +133,13 @@ public class TestBedEntry {
         this.id = id;
     }
 
-    public TestBed getTestBed() {
+    /*public TestBed getTestBed() {
         return testBed;
     }
 
     public void setTestBed(TestBed testBed) {
         this.testBed = testBed;
-    }
+    }*/
 
     public String getTime() {
         return time;
@@ -312,7 +319,7 @@ public class TestBedEntry {
 
 	@Override
 	public String toString() {
-		return "TestBedEntry [id=" + id + ", testBed=" + testBed + ", time=" + time + ", raisedBy=" + raisedBy
+		return "TestBedEntry [id=" + id + ", time=" + time + ", raisedBy=" + raisedBy
 				+ ", testBedUser=" + testBedUser + ", project=" + project + ", plannedHours=" + plannedHours
 				+ ", uptimeHours=" + uptimeHours + ", utilizationHours=" + utilizationHours + ", validationHours="
 				+ validationHours + ", runningInRemarks=" + runningInRemarks + ", runningInHours=" + runningInHours

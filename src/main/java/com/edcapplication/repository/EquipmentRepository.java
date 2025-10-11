@@ -6,7 +6,7 @@ import org.springframework.stereotype.Repository;
 import com.edcapplication.model.Equipment;
 
 @Repository
-public interface EquipmentRepository extends CrudRepository<Equipment, Integer> {
+public interface EquipmentRepository extends CrudRepository<Equipment, Long> {
 
 }
 

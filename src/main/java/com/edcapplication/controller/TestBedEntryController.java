@@ -26,7 +26,7 @@ public class TestBedEntryController {
 
     @GetMapping("/testBedEntrys/{testbedId}/{raisedOn}/{shift}")
     public TestBedEntry getTestBedEntryById(
-            @PathVariable("testbedId") Integer testbedId,
+            @PathVariable("testbedId") Long testbedId,
             @PathVariable("raisedOn") String raisedOn,
             @PathVariable("shift") String shift) {
     	 LocalDate raisedOnDate = LocalDate.parse(raisedOn);  // ✅ Fix: Parse String to LocalDate
@@ -46,7 +46,7 @@ public class TestBedEntryController {
 
     @DeleteMapping("/testBedEntrys/{testbedId}/{raisedOn}/{shift}")
     public void deleteTestBedEntry(
-            @PathVariable("testbedId") Integer testbedId,
+            @PathVariable("testbedId") Long testbedId,
             @PathVariable("raisedOn") String raisedOn,
             @PathVariable("shift") String shift) {
     	 LocalDate raisedOnDate = LocalDate.parse(raisedOn);  // ✅ Fix: Parse String to LocalDate

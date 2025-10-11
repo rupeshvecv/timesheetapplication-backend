@@ -4,6 +4,8 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
+import com.edcapplication.exception.BadRequestException;
+import com.edcapplication.exception.ResourceNotFoundException;
 import com.edcapplication.model.TestBed;
 import com.edcapplication.repository.TestBedRepository;
 
@@ -19,7 +21,13 @@ private TestBedRepository testBedRepository;
 	}
 	
 	public List<TestBed> getAllTestBeds() {
-		return (List<TestBed>) testBedRepository.findAll();
+		//return (List<TestBed>) testBedRepository.findAll();
+		
+		List<TestBed> testBeds = (List<TestBed>)testBedRepository.findAll();
+        if (testBeds.isEmpty()) {
+            throw new ResourceNotFoundException("No TestBeds found in the system");
+        }
+        return testBeds;
 		
 		/*
 		 * List<TestBed> testBeds = (List<TestBed>) testBedRepository.findAll();
@@ -36,9 +44,12 @@ private TestBedRepository testBedRepository;
 		return TestBed;
 	}*/
 	
-	public TestBed getTestBedById(int id) {
+	public TestBed getTestBedById(Long id) {
+		 if (id == null) {
+	            throw new BadRequestException("TestBed ID must not be null");
+	        }
         return testBedRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("TestBed not found with ID: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("TestBed not found with ID: " + id));
     }
 	
 	public TestBed addTestBed(TestBed testBed) {
@@ -47,15 +58,31 @@ private TestBedRepository testBedRepository;
 		 * testBed.getBdrrEntries().forEach(entry -> entry.setTestBed(testBed)); }
 		 * return testBedRepository.save(testBed);
 		 */
+		 if(testBed == null){
+			 throw new BadRequestException("TestBed data cannot be null");
+	     }
+	     if(testBed.getName() == null || testBed.getName().trim().isEmpty()) {
+	         throw new BadRequestException("TestBed name is required");
+	     }
 		return testBedRepository.save(testBed);
 	}
 	
 	//Update an existing TestBed
-    public TestBed updateTestBed(int id, TestBed updatedTestBed) {
+    public TestBed updateTestBed(Long id, TestBed updatedTestBed) {
+    	 if (id == null) {
+             throw new BadRequestException("TestBed ID is required for update");
+         }
+         if (updatedTestBed == null) {
+             throw new BadRequestException("Updated TestBed data cannot be null");
+         }
         TestBed existing = testBedRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("TestBed not found with ID: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("TestBed not found with ID: " + id));
 
-        existing.setName(updatedTestBed.getName());
+        if (updatedTestBed.getName() != null && !updatedTestBed.getName().trim().isEmpty()) {
+            existing.setName(updatedTestBed.getName());
+        } else {
+            throw new BadRequestException("TestBed name cannot be empty");
+        }
 
 		/*
 		 * //Update bdrrEntries safely if (updatedTestBed.getBdrrEntries() != null) { //
@@ -69,9 +96,13 @@ private TestBedRepository testBedRepository;
         return testBedRepository.save(existing);
     }
     
-	public void deleteTestBed(int id) {
+	public void deleteTestBed(Long id) {
+		if (id == null) {
+            throw new BadRequestException("TestBed ID is required for deletion");
+        }
+
         if (!testBedRepository.existsById(id)) {
-            throw new EntityNotFoundException("TestBed not found with ID: " + id);
+            throw new ResourceNotFoundException("TestBed not found with ID: " + id);
         }
         testBedRepository.deleteById(id);
     }

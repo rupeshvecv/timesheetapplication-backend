@@ -9,7 +9,7 @@ public class Project {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    private int id;
+    private Long id;
 
     @Column(name = "project_code")
     private String projectCode;
@@ -31,7 +31,7 @@ public class Project {
 
     public Project() {}
 
-    public Project(int id, String projectCode, String description, String status, 
+    public Project(Long id, String projectCode, String description, String status, 
     		String projectOwner, LocalDate projectStartDate, LocalDate projectEndDate) {
         this.id = id;
         this.projectCode = projectCode;
@@ -43,8 +43,8 @@ public class Project {
     }
 
     //getters & setters
-    public int getId() { return id; }
-    public void setId(int id) { this.id = id; }
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
 
     public String getProjectCode() { return projectCode; }
     public void setProjectCode(String projectCode) { this.projectCode = projectCode; }

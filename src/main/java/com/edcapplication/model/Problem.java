@@ -15,7 +15,7 @@ public class Problem {
 
 	@Id
 	@GeneratedValue(strategy=GenerationType.AUTO)
-	private int id;
+	private Long id;
 	
 	@Column(name= "problem_name")
 	private String problemName;
@@ -27,18 +27,18 @@ public class Problem {
 	public Problem() {
 		super();
 	}
-	public Problem(int id, String problemName, Equipment equipment) {
+	public Problem(Long id, String problemName, Equipment equipment) {
 		super();
 		this.id = id;
 		this.problemName = problemName;
 		this.equipment = equipment;
 	}
 
-	public int getId() {
+	public Long getId() {
 		return id;
 	}
 
-	public void setId(int id) {
+	public void setId(Long id) {
 		this.id = id;
 	}
 
