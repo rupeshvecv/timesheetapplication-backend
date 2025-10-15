@@ -34,23 +34,23 @@ public class TestBedEntry {
     @Column(name = "validation_hours")
     private double validationHours;
 
-    @Column(name = "running_in_remarks")
-    private String runningInRemarks;
+    @Column(name = "test_description")
+    private String testDescription;
 
-    @Column(name = "running_in_hours")
-    private double runningInHours;
+    @Column(name = "test_description_hours")
+    private double testDescriptionHours;
+    
+    @Column(name = "workon_engine_remarks")
+    private String workonEngineRemarks;
+
+    @Column(name = "workon_engine_hours")
+    private double workonEngineHours;
 
     @Column(name = "set_up_remarks")
     private String setUpRemarks;
 
     @Column(name = "set_up_hours")
     private double setUpHours;
-
-    @Column(name = "workon_engine_remarks")
-    private String workonEngineRemarks;
-
-    @Column(name = "workon_engine_hours")
-    private double workonEngineHours;
 
     @Column(name = "break_down_remarks")
     private String breakDownRemarks;
@@ -61,8 +61,14 @@ public class TestBedEntry {
     @Column(name = "no_man_power_remarks")
     private String noManPowerRemarks;
 
-    @Column(name = "no_man_power__hours")
+    @Column(name = "no_man_power_hours")
     private double noManPowerHours;
+    
+    @Column(name = "power_cut_remarks")
+    private String powerCutRemarks;
+
+    @Column(name = "power_cut_hours")
+    private double powerCutHours;
 
     @Column(name = "any_other_remarks")
     private String anyOtherRemarks;
@@ -70,264 +76,261 @@ public class TestBedEntry {
     @Column(name = "any_other_hours")
     private double anyOtherHours;
 
+    @Column(name = "coummulative_description")
+    private String coummulativeDescription;
+    
     @Column(name = "total_sum")
     private double totalSum;
-
-    @Column(name = "engine_changeover_time")
-    private String engineChangeoverTime;
 
     // --- Constructors ---
     public TestBedEntry() {}
 
-	/*
-	 * public TestBedEntry(TestBedEntryEmbeddedId id, TestBed testBed, String time,
-	 * String raisedBy, Project project, String testBedUser, double plannedHours,
-	 * double uptimeHours, double utilizationHours, double validationHours, String
-	 * runningInRemarks, double runningInHours, String setUpRemarks, double
-	 * setUpHours, String workonEngineRemarks, double workonEngineHours, String
-	 * breakDownRemarks, double breakDownHours, String noManPowerRemarks, double
-	 * noManPowerHours, String anyOtherRemarks, double anyOtherHours, double
-	 * totalSum, String engineChangeoverTime) {
-	 */
-    	
-    	
-    	 public TestBedEntry(TestBedEntryEmbeddedId id, String time, String raisedBy,
-                 Project project, String testBedUser, double plannedHours, double uptimeHours,
-                 double utilizationHours, double validationHours, String runningInRemarks,
-                 double runningInHours, String setUpRemarks, double setUpHours,
-                 String workonEngineRemarks, double workonEngineHours, String breakDownRemarks,
-                 double breakDownHours, String noManPowerRemarks, double noManPowerHours,
-                 String anyOtherRemarks, double anyOtherHours, double totalSum,
-                 String engineChangeoverTime) {
-        this.id = id;
-        //this.testBed = testBed;
-        this.time = time;
-        this.raisedBy = raisedBy;
-        this.project = project;
-        this.testBedUser = testBedUser;
-        this.plannedHours = plannedHours;
-        this.uptimeHours = uptimeHours;
-        this.utilizationHours = utilizationHours;
-        this.validationHours = validationHours;
-        this.runningInRemarks = runningInRemarks;
-        this.runningInHours = runningInHours;
-        this.setUpRemarks = setUpRemarks;
-        this.setUpHours = setUpHours;
-        this.workonEngineRemarks = workonEngineRemarks;
-        this.workonEngineHours = workonEngineHours;
-        this.breakDownRemarks = breakDownRemarks;
-        this.breakDownHours = breakDownHours;
-        this.noManPowerRemarks = noManPowerRemarks;
-        this.noManPowerHours = noManPowerHours;
-        this.anyOtherRemarks = anyOtherRemarks;
-        this.anyOtherHours = anyOtherHours;
-        this.totalSum = totalSum;
-        this.engineChangeoverTime = engineChangeoverTime;
-    }
+	public TestBedEntry(TestBedEntryEmbeddedId id, String time, String raisedBy, String testBedUser, Project project,
+			double plannedHours, double uptimeHours, double utilizationHours, double validationHours,
+			String testDescription, double testDescriptionHours, String workonEngineRemarks, double workonEngineHours,
+			String setUpRemarks, double setUpHours, String breakDownRemarks, double breakDownHours,
+			String noManPowerRemarks, double noManPowerHours, String powerCutRemarks, double powerCutHours,
+			String anyOtherRemarks, double anyOtherHours, String coummulativeHours, double totalSum) {
+		super();
+		this.id = id;
+		this.time = time;
+		this.raisedBy = raisedBy;
+		this.testBedUser = testBedUser;
+		this.project = project;
+		this.plannedHours = plannedHours;
+		this.uptimeHours = uptimeHours;
+		this.utilizationHours = utilizationHours;
+		this.validationHours = validationHours;
+		this.testDescription = testDescription;
+		this.testDescriptionHours = testDescriptionHours;
+		this.workonEngineRemarks = workonEngineRemarks;
+		this.workonEngineHours = workonEngineHours;
+		this.setUpRemarks = setUpRemarks;
+		this.setUpHours = setUpHours;
+		this.breakDownRemarks = breakDownRemarks;
+		this.breakDownHours = breakDownHours;
+		this.noManPowerRemarks = noManPowerRemarks;
+		this.noManPowerHours = noManPowerHours;
+		this.powerCutRemarks = powerCutRemarks;
+		this.powerCutHours = powerCutHours;
+		this.anyOtherRemarks = anyOtherRemarks;
+		this.anyOtherHours = anyOtherHours;
+		this.coummulativeDescription = coummulativeDescription;
+		this.totalSum = totalSum;
+	}
 
-    public TestBedEntryEmbeddedId getId() {
-        return id;
-    }
+	public TestBedEntryEmbeddedId getId() {
+		return id;
+	}
 
-    public void setId(TestBedEntryEmbeddedId id) {
-        this.id = id;
-    }
+	public void setId(TestBedEntryEmbeddedId id) {
+		this.id = id;
+	}
 
-    /*public TestBed getTestBed() {
-        return testBed;
-    }
+	public String getTime() {
+		return time;
+	}
 
-    public void setTestBed(TestBed testBed) {
-        this.testBed = testBed;
-    }*/
+	public void setTime(String time) {
+		this.time = time;
+	}
 
-    public String getTime() {
-        return time;
-    }
+	public String getRaisedBy() {
+		return raisedBy;
+	}
 
-    public void setTime(String time) {
-        this.time = time;
-    }
+	public void setRaisedBy(String raisedBy) {
+		this.raisedBy = raisedBy;
+	}
 
-    public String getRaisedBy() {
-        return raisedBy;
-    }
+	public String getTestBedUser() {
+		return testBedUser;
+	}
 
-    public void setRaisedBy(String raisedBy) {
-        this.raisedBy = raisedBy;
-    }
+	public void setTestBedUser(String testBedUser) {
+		this.testBedUser = testBedUser;
+	}
 
-    public String getTestBedUser() {
-        return testBedUser;
-    }
+	public Project getProject() {
+		return project;
+	}
 
-    public void setTestBedUser(String testBedUser) {
-        this.testBedUser = testBedUser;
-    }
+	public void setProject(Project project) {
+		this.project = project;
+	}
 
-    public Project getProject() {
-        return project;
-    }
+	public double getPlannedHours() {
+		return plannedHours;
+	}
 
-    public void setProject(Project project) {
-        this.project = project;
-    }
+	public void setPlannedHours(double plannedHours) {
+		this.plannedHours = plannedHours;
+	}
 
-    public double getPlannedHours() {
-        return plannedHours;
-    }
+	public double getUptimeHours() {
+		return uptimeHours;
+	}
 
-    public void setPlannedHours(double plannedHours) {
-        this.plannedHours = plannedHours;
-    }
+	public void setUptimeHours(double uptimeHours) {
+		this.uptimeHours = uptimeHours;
+	}
 
-    public double getUptimeHours() {
-        return uptimeHours;
-    }
+	public double getUtilizationHours() {
+		return utilizationHours;
+	}
 
-    public void setUptimeHours(double uptimeHours) {
-        this.uptimeHours = uptimeHours;
-    }
+	public void setUtilizationHours(double utilizationHours) {
+		this.utilizationHours = utilizationHours;
+	}
 
-    public double getUtilizationHours() {
-        return utilizationHours;
-    }
+	public double getValidationHours() {
+		return validationHours;
+	}
 
-    public void setUtilizationHours(double utilizationHours) {
-        this.utilizationHours = utilizationHours;
-    }
+	public void setValidationHours(double validationHours) {
+		this.validationHours = validationHours;
+	}
 
-    public double getValidationHours() {
-        return validationHours;
-    }
+	public String getTestDescription() {
+		return testDescription;
+	}
 
-    public void setValidationHours(double validationHours) {
-        this.validationHours = validationHours;
-    }
+	public void setTestDescription(String testDescription) {
+		this.testDescription = testDescription;
+	}
 
-    public String getRunningInRemarks() {
-        return runningInRemarks;
-    }
+	public double getTestDescriptionHours() {
+		return testDescriptionHours;
+	}
 
-    public void setRunningInRemarks(String runningInRemarks) {
-        this.runningInRemarks = runningInRemarks;
-    }
+	public void setTestDescriptionHours(double testDescriptionHours) {
+		this.testDescriptionHours = testDescriptionHours;
+	}
 
-    public double getRunningInHours() {
-        return runningInHours;
-    }
+	public String getWorkonEngineRemarks() {
+		return workonEngineRemarks;
+	}
 
-    public void setRunningInHours(double runningInHours) {
-        this.runningInHours = runningInHours;
-    }
+	public void setWorkonEngineRemarks(String workonEngineRemarks) {
+		this.workonEngineRemarks = workonEngineRemarks;
+	}
 
-    public String getSetUpRemarks() {
-        return setUpRemarks;
-    }
+	public double getWorkonEngineHours() {
+		return workonEngineHours;
+	}
 
-    public void setSetUpRemarks(String setUpRemarks) {
-        this.setUpRemarks = setUpRemarks;
-    }
+	public void setWorkonEngineHours(double workonEngineHours) {
+		this.workonEngineHours = workonEngineHours;
+	}
 
-    public double getSetUpHours() {
-        return setUpHours;
-    }
+	public String getSetUpRemarks() {
+		return setUpRemarks;
+	}
 
-    public void setSetUpHours(double setUpHours) {
-        this.setUpHours = setUpHours;
-    }
+	public void setSetUpRemarks(String setUpRemarks) {
+		this.setUpRemarks = setUpRemarks;
+	}
 
-    public String getWorkonEngineRemarks() {
-        return workonEngineRemarks;
-    }
+	public double getSetUpHours() {
+		return setUpHours;
+	}
 
-    public void setWorkonEngineRemarks(String workonEngineRemarks) {
-        this.workonEngineRemarks = workonEngineRemarks;
-    }
+	public void setSetUpHours(double setUpHours) {
+		this.setUpHours = setUpHours;
+	}
 
-    public double getWorkonEngineHours() {
-        return workonEngineHours;
-    }
+	public String getBreakDownRemarks() {
+		return breakDownRemarks;
+	}
 
-    public void setWorkonEngineHours(double workonEngineHours) {
-        this.workonEngineHours = workonEngineHours;
-    }
+	public void setBreakDownRemarks(String breakDownRemarks) {
+		this.breakDownRemarks = breakDownRemarks;
+	}
 
-    public String getBreakDownRemarks() {
-        return breakDownRemarks;
-    }
+	public double getBreakDownHours() {
+		return breakDownHours;
+	}
 
-    public void setBreakDownRemarks(String breakDownRemarks) {
-        this.breakDownRemarks = breakDownRemarks;
-    }
+	public void setBreakDownHours(double breakDownHours) {
+		this.breakDownHours = breakDownHours;
+	}
 
-    public double getBreakDownHours() {
-        return breakDownHours;
-    }
+	public String getNoManPowerRemarks() {
+		return noManPowerRemarks;
+	}
 
-    public void setBreakDownHours(double breakDownHours) {
-        this.breakDownHours = breakDownHours;
-    }
+	public void setNoManPowerRemarks(String noManPowerRemarks) {
+		this.noManPowerRemarks = noManPowerRemarks;
+	}
 
-    public String getNoManPowerRemarks() {
-        return noManPowerRemarks;
-    }
+	public double getNoManPowerHours() {
+		return noManPowerHours;
+	}
 
-    public void setNoManPowerRemarks(String noManPowerRemarks) {
-        this.noManPowerRemarks = noManPowerRemarks;
-    }
+	public void setNoManPowerHours(double noManPowerHours) {
+		this.noManPowerHours = noManPowerHours;
+	}
 
-    public double getNoManPowerHours() {
-        return noManPowerHours;
-    }
+	public String getPowerCutRemarks() {
+		return powerCutRemarks;
+	}
 
-    public void setNoManPowerHours(double noManPowerHours) {
-        this.noManPowerHours = noManPowerHours;
-    }
+	public void setPowerCutRemarks(String powerCutRemarks) {
+		this.powerCutRemarks = powerCutRemarks;
+	}
 
-    public String getAnyOtherRemarks() {
-        return anyOtherRemarks;
-    }
+	public double getPowerCutHours() {
+		return powerCutHours;
+	}
 
-    public void setAnyOtherRemarks(String anyOtherRemarks) {
-        this.anyOtherRemarks = anyOtherRemarks;
-    }
+	public void setPowerCutHours(double powerCutHours) {
+		this.powerCutHours = powerCutHours;
+	}
 
-    public double getAnyOtherHours() {
-        return anyOtherHours;
-    }
+	public String getAnyOtherRemarks() {
+		return anyOtherRemarks;
+	}
 
-    public void setAnyOtherHours(double anyOtherHours) {
-        this.anyOtherHours = anyOtherHours;
-    }
+	public void setAnyOtherRemarks(String anyOtherRemarks) {
+		this.anyOtherRemarks = anyOtherRemarks;
+	}
 
-    public double getTotalSum() {
-        return totalSum;
-    }
+	public double getAnyOtherHours() {
+		return anyOtherHours;
+	}
 
-    public void setTotalSum(double totalSum) {
-        this.totalSum = totalSum;
-    }
+	public void setAnyOtherHours(double anyOtherHours) {
+		this.anyOtherHours = anyOtherHours;
+	}
 
-    public String getEngineChangeoverTime() {
-        return engineChangeoverTime;
-    }
+	public String getCoummulativeDescription() {
+		return coummulativeDescription;
+	}
 
-    public void setEngineChangeoverTime(String engineChangeoverTime) {
-        this.engineChangeoverTime = engineChangeoverTime;
-    }
+	public void setCoummulativeDescription(String coummulativeDescription) {
+		this.coummulativeDescription = coummulativeDescription;
+	}
+
+	public double getTotalSum() {
+		return totalSum;
+	}
+
+	public void setTotalSum(double totalSum) {
+		this.totalSum = totalSum;
+	}
 
 	@Override
 	public String toString() {
-		return "TestBedEntry [id=" + id + ", time=" + time + ", raisedBy=" + raisedBy
-				+ ", testBedUser=" + testBedUser + ", project=" + project + ", plannedHours=" + plannedHours
-				+ ", uptimeHours=" + uptimeHours + ", utilizationHours=" + utilizationHours + ", validationHours="
-				+ validationHours + ", runningInRemarks=" + runningInRemarks + ", runningInHours=" + runningInHours
-				+ ", setUpRemarks=" + setUpRemarks + ", setUpHours=" + setUpHours + ", workonEngineRemarks="
-				+ workonEngineRemarks + ", workonEngineHours=" + workonEngineHours + ", breakDownRemarks="
+		return "TestBedEntry [id=" + id + ", time=" + time + ", raisedBy=" + raisedBy + ", testBedUser=" + testBedUser
+				+ ", project=" + project + ", plannedHours=" + plannedHours + ", uptimeHours=" + uptimeHours
+				+ ", utilizationHours=" + utilizationHours + ", validationHours=" + validationHours
+				+ ", testDescription=" + testDescription + ", testDescriptionHours=" + testDescriptionHours
+				+ ", workonEngineRemarks=" + workonEngineRemarks + ", workonEngineHours=" + workonEngineHours
+				+ ", setUpRemarks=" + setUpRemarks + ", setUpHours=" + setUpHours + ", breakDownRemarks="
 				+ breakDownRemarks + ", breakDownHours=" + breakDownHours + ", noManPowerRemarks=" + noManPowerRemarks
-				+ ", noManPowerHours=" + noManPowerHours + ", anyOtherRemarks=" + anyOtherRemarks + ", anyOtherHours="
-				+ anyOtherHours + ", totalSum=" + totalSum + ", engineChangeoverTime=" + engineChangeoverTime + "]";
+				+ ", noManPowerHours=" + noManPowerHours + ", powerCutRemarks=" + powerCutRemarks + ", powerCutHours="
+				+ powerCutHours + ", anyOtherRemarks=" + anyOtherRemarks + ", anyOtherHours=" + anyOtherHours
+				+ ", coummulativeDescription=" + coummulativeDescription + ", totalSum=" + totalSum + "]";
 	}
-    
+
 }

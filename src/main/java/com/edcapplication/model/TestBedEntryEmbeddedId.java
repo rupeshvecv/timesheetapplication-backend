@@ -31,6 +31,11 @@ public class TestBedEntryEmbeddedId implements Serializable {
         this.raisedOn = raisedOn;
         this.shift = shift;
     }
+    
+    //Constructor that matches your usage
+    public TestBedEntryEmbeddedId(Long testbedId) {
+        this.testbedId = testbedId;
+    }
 
     // Getters and setters
     public Long getTestbedId() {

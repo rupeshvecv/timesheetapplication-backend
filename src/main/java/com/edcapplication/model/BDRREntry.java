@@ -63,6 +63,18 @@ public class BDRREntry {
 	@Column(name= "attender")
 	private String attender;
 	
+	@Column(name= "closing_date")
+	private LocalDate closingDate;
+	
+	@Column(name= "break_down_description")
+	private String breakDownDescription;
+	
+	@Column(name= "initial_analysis")
+	private String initialAnalysis;
+	
+	@Column(name= "work_done_description")
+	private String workDoneDescription;
+	
 	@Column(name= "solution_root_cause")
 	private String solutionRootCause;
 	
@@ -84,9 +96,6 @@ public class BDRREntry {
 	@Column(name= "target_date")
 	private LocalDate targetDate;
 	
-	@Column(name= "closing_date")
-	private LocalDate closingDate;
-	
 	@Column(name= "part_used")
 	private String partUsed;
 	
@@ -99,15 +108,6 @@ public class BDRREntry {
 	@Column(name= "quantity")
 	private String quantity;
 	
-	@Column(name= "break_down_description")
-	private String breakDownDescription;
-	
-	@Column(name= "initial_analysis")
-	private String initialAnalysis;
-	
-	@Column(name= "work_done_description")
-	private String workDoneDescription;
-
 	public BDRREntry() {
 		super();
 	}

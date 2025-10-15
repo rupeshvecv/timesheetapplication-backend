@@ -1,6 +1,9 @@
 package com.edcapplication.service;
 
+import java.time.LocalDate;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -67,8 +70,8 @@ public class TestBedEntryService {
         entry.setUptimeHours(dao.getUptimeHours());
         entry.setUtilizationHours(dao.getUtilizationHours());
         entry.setValidationHours(dao.getValidationHours());
-        entry.setRunningInRemarks(dao.getRunningInRemarks());
-        entry.setRunningInHours(dao.getRunningInHours());
+        entry.setTestDescription(dao.getTestDescription());
+        entry.setTestDescriptionHours(dao.getTestDescriptionHours());
         entry.setSetUpRemarks(dao.getSetUpRemarks());
         entry.setSetUpHours(dao.getSetUpHours());
         entry.setWorkonEngineRemarks(dao.getWorkonEngineRemarks());
@@ -77,10 +80,12 @@ public class TestBedEntryService {
         entry.setBreakDownHours(dao.getBreakDownHours());
         entry.setNoManPowerRemarks(dao.getNoManPowerRemarks());
         entry.setNoManPowerHours(dao.getNoManPowerHours());
+        entry.setPowerCutRemarks(dao.getPowerCutRemarks());
+        entry.setPowerCutHours(dao.getPowerCutHours());
         entry.setAnyOtherRemarks(dao.getAnyOtherRemarks());
         entry.setAnyOtherHours(dao.getAnyOtherHours());
         entry.setTotalSum(dao.getTotalSum());
-        entry.setEngineChangeoverTime(dao.getEngineChangeoverTime());
+        entry.setCoummulativeDescription(dao.getCoummulativeDescription());
 
         //return testBedEntryRepository.save(entry);
         
@@ -119,8 +124,8 @@ public class TestBedEntryService {
         existing.setUptimeHours(dao.getUptimeHours());
         existing.setUtilizationHours(dao.getUtilizationHours());
         existing.setValidationHours(dao.getValidationHours());
-        existing.setRunningInRemarks(dao.getRunningInRemarks());
-        existing.setRunningInHours(dao.getRunningInHours());
+        existing.setTestDescription(dao.getTestDescription());
+        existing.setTestDescriptionHours(dao.getTestDescriptionHours());
         existing.setSetUpRemarks(dao.getSetUpRemarks());
         existing.setSetUpHours(dao.getSetUpHours());
         existing.setWorkonEngineRemarks(dao.getWorkonEngineRemarks());
@@ -129,10 +134,12 @@ public class TestBedEntryService {
         existing.setBreakDownHours(dao.getBreakDownHours());
         existing.setNoManPowerRemarks(dao.getNoManPowerRemarks());
         existing.setNoManPowerHours(dao.getNoManPowerHours());
+        existing.setPowerCutRemarks(dao.getPowerCutRemarks());
+        existing.setPowerCutHours(dao.getPowerCutHours());
         existing.setAnyOtherRemarks(dao.getAnyOtherRemarks());
         existing.setAnyOtherHours(dao.getAnyOtherHours());
         existing.setTotalSum(dao.getTotalSum());
-        existing.setEngineChangeoverTime(dao.getEngineChangeoverTime());
+        existing.setCoummulativeDescription(dao.getCoummulativeDescription());
 
         return testBedEntryRepository.save(existing);
     }
@@ -173,5 +180,18 @@ public class TestBedEntryService {
         if (dao.getTestBedUser() != null) {
 			mailService.sendMail(new String[]{dao.getTestBedUser()}, subject, body, bcc);
 		}
+    }
+    
+    //Fetch list of entries by testbedId
+    public List<TestBedEntry> getTestBedEntriesByTestbedIdAndDateRange(Long testbedId, LocalDate startDate, LocalDate endDate) {
+        return testBedEntryRepository.findById_TestbedIdAndId_RaisedOnBetween(testbedId, startDate, endDate);
+    }
+
+    public List<TestBedEntry> getEntriesByShiftAndDateRange(String shift, LocalDate startDate, LocalDate endDate) {
+        return testBedEntryRepository.findById_ShiftAndId_RaisedOnBetween(shift, startDate, endDate);
+    }
+
+    public List<TestBedEntry> getEntriesByDateRange(LocalDate startDate, LocalDate endDate) {
+        return testBedEntryRepository.findById_RaisedOnBetween(startDate, endDate);
     }
 }

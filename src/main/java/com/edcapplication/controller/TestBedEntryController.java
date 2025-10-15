@@ -4,6 +4,8 @@ import java.time.LocalDate;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import com.edcapplication.dao.TestBedEntryDao;
@@ -53,4 +55,33 @@ public class TestBedEntryController {
          TestBedEntryEmbeddedId id = new TestBedEntryEmbeddedId(testbedId, raisedOnDate, shift);
         testBedEntryService.deleteTestBedEntry(id);
     }
+    
+    //Get entries by testbedId and date range
+    @GetMapping("/testBedEntrys/byTestBedID/{testbedId}/{startDate}/{endDate}")
+    public ResponseEntity<List<TestBedEntry>> getTestBedEntriesByTestbedIdAndDateRange(
+            @PathVariable("testbedId") Long testbedId,
+            @PathVariable("startDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @PathVariable("endDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
+
+        List<TestBedEntry> entries = testBedEntryService.getTestBedEntriesByTestbedIdAndDateRange(testbedId, startDate, endDate);
+        return ResponseEntity.ok(entries);
+    }
+
+    @GetMapping("/testBedEntrys/byshift")
+    public List<TestBedEntry> getEntriesByShiftAndDateRange(
+            @RequestParam String shift,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
+
+        return testBedEntryService.getEntriesByShiftAndDateRange(shift, startDate, endDate);
+    }
+
+    @GetMapping("/testBedEntrys/byDateRange")
+    public List<TestBedEntry> getEntriesByDateRange(
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
+
+        return testBedEntryService.getEntriesByDateRange(startDate, endDate);
+    }
+    
 }
