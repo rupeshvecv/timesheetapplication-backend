@@ -1,8 +1,10 @@
 package com.edcapplication.service;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import com.edcapplication.dao.BDRREntryDao;
@@ -269,5 +271,48 @@ public class BDRREntryService {
 		if (!toList.isEmpty()) {
 			mailService.sendMail(toList.toArray(new String[0]), subject, body, bcc);
 		}
+	}
+    
+	public List<BDRREntry> getBDRREntriesByDynamicFilters(String status, String raisedBy, String attender,
+			Long testBedId, LocalDate startDate, LocalDate endDate) {
+
+		boolean allPresent = (status != null && !status.isEmpty()) && (raisedBy != null && !raisedBy.isEmpty())
+				&& (attender != null && !attender.isEmpty()) && (testBedId != null)
+				&& (startDate != null && endDate != null);
+
+		//If all parameters are provided → use direct method
+		if (allPresent) {
+			return bdrrEntryRepository.findByStatusAndRaisedByAndAttenderAndTestBed_IdAndRaisedOnBetween(status,
+					raisedBy, attender, testBedId, startDate, endDate);
+		}
+
+		//Else → build dynamic specification
+		Specification<BDRREntry> spec = Specification.where(null);
+
+		if (status != null && !status.isEmpty()) {
+			spec = spec.and((root, query, cb) -> cb.equal(root.get("status"), status));
+		}
+
+		if (raisedBy != null && !raisedBy.isEmpty()) {
+			spec = spec.and((root, query, cb) -> cb.equal(root.get("raisedBy"), raisedBy));
+		}
+
+		if (attender != null && !attender.isEmpty()) {
+			spec = spec.and((root, query, cb) -> cb.equal(root.get("attender"), attender));
+		}
+
+		if (testBedId != null) {
+			spec = spec.and((root, query, cb) -> cb.equal(root.get("testBed").get("id"), testBedId));
+		}
+
+		if (startDate != null && endDate != null) {
+			spec = spec.and((root, query, cb) -> cb.between(root.get("raisedOn"), startDate, endDate));
+		} else if (startDate != null) {
+			spec = spec.and((root, query, cb) -> cb.greaterThanOrEqualTo(root.get("raisedOn"), startDate));
+		} else if (endDate != null) {
+			spec = spec.and((root, query, cb) -> cb.lessThanOrEqualTo(root.get("raisedOn"), endDate));
+		}
+
+		return bdrrEntryRepository.findAll(spec);
 	}
 }
