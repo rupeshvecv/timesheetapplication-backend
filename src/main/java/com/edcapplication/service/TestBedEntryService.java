@@ -153,24 +153,48 @@ public class TestBedEntryService {
     
     //Mail sender
     private void sendCreationMail(TestBed testBed, TestBedEntryDao dao) {
-        String subject = "New TestBed Entry Created";
-        String htmlBody = """
-                Hello Team,
-                A new TestBed entry has been created.
-                TestBed: %s
-                Raised By: %s
-                Shift: %s
-                Date: %s
-                Please check the system for more details.
+    	String subject = "New TestBed Entry Created";
 
-                Regards,
-                EDC System
-                """.formatted(
-                testBed.getName(),
-                dao.getRaisedBy(),
-                dao.getShift(),
-                dao.getRaisedOn()
-        );
+    	String htmlBody = """
+    	<html>
+    	  <body style="font-family: Arial, sans-serif; color: #333; background-color: #f8f9fa; padding: 20px;">
+    	    <div style="max-width: 700px; margin: auto; background: #fff; border-radius: 8px;
+    	                box-shadow: 0 2px 8px rgba(0,0,0,0.1); padding: 20px;">
+    	      <h2 style="color: #1F618D; border-bottom: 2px solid #1F618D; padding-bottom: 6px;">
+    	        New TestBed Entry Created
+    	      </h2>
+
+    	      <p style="font-size: 15px;">Hello Team,</p>
+    	      <p style="font-size: 15px;">
+    	        A new <b>TestBed entry</b> has been created. Please find the details below:
+    	      </p>
+
+    	      <table border="1" cellspacing="0" cellpadding="8"
+    	             style="border-collapse: collapse; width: 100%; font-size: 14px;">
+    	        <tr style="background-color: #f2f2f2;">
+    	          <th align="left" style="width: 30%;">Field</th>
+    	          <th align="left">Details</th>
+    	        </tr>
+    	        <tr><td><b>TestBed</b></td><td>%s</td></tr>
+    	        <tr><td><b>Raised By</b></td><td>%s</td></tr>
+    	        <tr><td><b>Shift</b></td><td>%s</td></tr>
+    	        <tr><td><b>Date</b></td><td>%s</td></tr>
+    	      </table>
+
+    	      <p style="margin-top: 20px; font-size: 14px;">
+    	        Please log in to the <b>EDC System</b> for more information.
+    	      </p>
+
+    	      <p style="font-size: 14px;">Regards,<br><b>EDC System</b></p>
+    	    </div>
+    	  </body>
+    	</html>
+    	""".formatted(
+    	    testBed.getName(),
+    	    dao.getRaisedBy(),
+    	    dao.getShift(),
+    	    dao.getRaisedOn()
+    	);
 
       //BCC recipients
         String[] bcc = new String[] {
@@ -179,7 +203,8 @@ public class TestBedEntryService {
         };
         if (dao.getTestBedUser() != null) {
 			//mailService.sendMail(new String[]{dao.getTestBedUser()}, subject, body, bcc);
-			mailService.sendMailHTMLFile("idmadmin@VECV.IN",new String[]{dao.getTestBedUser()},subject,htmlBody,new String[]{},bcc);
+			//mailService.sendMailHTMLFile("idmadmin@VECV.IN",new String[]{dao.getTestBedUser()},subject,htmlBody,new String[]{},bcc);
+			mailService.sendMailHTMLFile("idmadmin@VECV.IN",new String[]{"rkraghuvanshi@vecv.in"},subject,htmlBody,new String[]{},bcc);
 		}
     }
     

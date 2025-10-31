@@ -14,12 +14,18 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Component
 public class TestBedMisScheduler {
@@ -39,29 +45,29 @@ public class TestBedMisScheduler {
     // Runs every day at 08:00 AM (adjust cron as needed)
     //@Scheduled(cron = "0 0 8 * * ?")
     // ⏰ Runs every day at 12:05 PM
-    @Scheduled(cron = "0 10 11 * * *")
-    public void sendDailyMisMail() {
+    @Scheduled(cron = "0 52 16 * * *")
+    public void sendDailyTestBedUptimeUtilizationMISMail() {
 
         LocalDate today = LocalDate.now();
         LocalDate yesterday = today.minusDays(18);
         String formattedDate = yesterday.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
 
-        // Get yesterday’s data
+        //Get yesterday’s data
         //List<TestBedEntry> entries = testBedEntryService.getEntriesByDateRange(yesterday, yesterday);
         List<TestBedEntry> entries = testBedEntryService.getEntriesByDateRange(yesterday, yesterday);
         
-        System.out.println("TestBedMisScheduler.sendDailyMisMail(entries) "+entries);
+        System.out.println("TestBedMisScheduler.sendDailyTestBedUptimeUtilizationMISMail(entries) "+entries);
 
-        // Build HTML Table
-        String htmlBody = buildHtmlMIS(entries, formattedDate);
+        //Build HTML Table
+        String htmlBody = buildTestBedUptimeUtilizationHtmlMIS(entries, formattedDate);
 
-        // Mail Subject
-        String subject = "Test Bed Uptime & Utilization MIS - " + formattedDate;
+        //Mail Subject
+        String subject = "Test Bed Uptime & Utilization MIS- " + formattedDate;
 
-        // Recipients (can be from DB/config)
+        //Recipients (can be from DB/config)
         String[] to = {"rkraghuvanshi@vecv.in", "askushwah2@VECV.IN"};
 
-        // Send
+        //Send
       //BCC recipients
         String[] bcc = new String[] {
             "rkraghuvanshi@vecv.in",
@@ -73,12 +79,12 @@ public class TestBedMisScheduler {
         System.out.println("Before Sending mail tttttttttttttttttttttttttttttttttt " + formattedDate);
 		//mailService.sendMail(bcc, subject, htmlBody, bcc);
         //mailService.sendHtmlMail("rkraghuvanshi@vecv.in",subject,htmlBody);
-		mailService.sendMailHTMLFile("idmadmin@VECV.IN",to,subject + LocalDate.now(),htmlBody,attachments,bcc);
+		mailService.sendMailHTMLFile("idmadmin@VECV.IN",to,subject,htmlBody,attachments,bcc);
 
         System.out.println("MIS Mail sent for " + formattedDate);
     }
 
-    private String buildHtmlMIS(List<TestBedEntry> entries, String formattedDate) {
+    private String buildTestBedUptimeUtilizationHtmlMIS(List<TestBedEntry> entries, String formattedDate) {
         StringBuilder html = new StringBuilder();
 
         html.append("<html><body>");
@@ -186,8 +192,10 @@ public class TestBedMisScheduler {
                 }
             }
         }
-
-        html.append("</table></body></html>");
+        html.append("</table></body>");
+        html.append("<br/>");
+        html.append("<p>Regards,<br/><b>EDC Admin</b></p>");
+        html.append("</html>");
         System.out.println("TestBedMisScheduler.buildHtmlMIS( OUTPUT ) :: "+html.toString());
         return html.toString();
     }
@@ -225,5 +233,103 @@ public class TestBedMisScheduler {
     private String nvl(String str) {
         return (str == null || str.isEmpty()) ? "" : str;
     }
+    
+    //Runs every Monday at 8:00 AM
+    //@Scheduled(cron = "0 0 8 * * MON")
+    @Scheduled(cron = "0 50 16 * * *")
+    public void sendWeeklyTestBedMis() {
+        LocalDate today = LocalDate.now();
+        LocalDate startDate = today.minusWeeks(1).with(DayOfWeek.MONDAY);
+        LocalDate endDate = startDate.plusDays(6); // Sunday
 
+        System.out.println("📅 Generating Weekly MIS from " + startDate + " to " + endDate);
+
+        //Fetch entries from last week
+        List<TestBedEntry> entries = testBedEntryService.getEntriesByDateRange(startDate, endDate);
+
+        if (entries.isEmpty()) {
+            System.out.println("⚠️ No Test Bed entries found for last week!");
+            return;
+        }
+
+        //Group by TestBed and Shift
+        Map<String, Map<String, List<TestBedEntry>>> grouped = entries.stream()
+                .collect(Collectors.groupingBy(
+                        e -> String.valueOf(e.getId().getTestbedId()),
+                        Collectors.groupingBy(e -> String.valueOf(e.getId().getShift()))
+                ));
+        
+        //Build status map (TestBed → Shift → Filled/Not Filled)
+        Map<String, Map<String, String>> statusMap = new LinkedHashMap<>();
+
+        for (Map.Entry<String, Map<String, List<TestBedEntry>>> testBedEntry : grouped.entrySet()) {
+            String testBedId = testBedEntry.getKey();
+            Map<String, String> shiftStatus = new LinkedHashMap<>();
+
+            for (String shift : Arrays.asList("A", "B", "C")) {
+                List<TestBedEntry> shiftEntries = testBedEntry.getValue().getOrDefault(shift, Collections.emptyList());
+                shiftStatus.put(shift, shiftEntries.isEmpty() ? "NOT FILLED" : "FILLED");
+            }
+
+            statusMap.put(testBedId, shiftStatus);
+        }
+
+        //Build HTML email body safely (Java 8 compatible)
+        StringBuilder html = new StringBuilder();
+        html.append("<html>");
+        html.append("<body style='font-family:Arial, sans-serif;'>");
+        html.append("<h2 style='color:#2E86C1;'>Weekly Test Bed Entry MIS</h2>");
+        html.append("<p><b>Duration:</b> ").append(startDate).append(" to ").append(endDate).append("</p>");
+        html.append("<table border='1' cellspacing='0' cellpadding='6' style='border-collapse:collapse;width:80%;'>");
+        html.append("<tr style='background-color:#f2f2f2;text-align:center;'>");
+        html.append("<th>Test Bed</th>");
+        html.append("<th>Shift A</th>");
+        html.append("<th>Shift B</th>");
+        html.append("<th>Shift C</th>");
+        html.append("</tr>");
+
+        for (Map.Entry<String, Map<String, String>> entry : statusMap.entrySet()) {
+            String testBedId = entry.getKey();
+            Map<String, String> shiftMap = entry.getValue();
+
+            html.append("<tr style='text-align:center;'>");
+            html.append("<td>TestBed ").append(testBedId).append("</td>");
+
+            for (String shift : Arrays.asList("A", "B", "C")) {
+                String status = shiftMap.getOrDefault(shift, "NOT FILLED");
+                String color = status.equals("FILLED") ? "#28a745" : "#dc3545";
+                html.append("<td style='color:#ffffff;background-color:").append(color).append(";'>")
+                        .append(status)
+                        .append("</td>");
+            }
+
+            html.append("</tr>");
+        }
+
+        html.append("</table>");
+        html.append("<br/>");
+        html.append("<p>Regards,<br/><b>EDC Admin</b></p>");
+        html.append("</body>");
+        html.append("</html>");
+
+        //Send mail with attachment
+   	 	String subject = "Weekly Test Bed MIS (" + startDate + " - " + endDate + ")";
+   	 	String[] attachments = {"C:/reports/daily-report.xlsx"};
+       
+   	 	//Recipients (can be from DB/config)
+   	 	String[] to = {"rkraghuvanshi@vecv.in", "askushwah2@VECV.IN"};
+
+   	 	//BCC recipients
+   	 	String[] bcc = new String[] {
+           "rkraghuvanshi@vecv.in",
+           "askushwah2@VECV.IN"
+       };
+
+        try {
+    		mailService.sendMailHTMLFile("idmadmin@VECV.IN",to,subject,html.toString(),attachments,bcc);
+            System.out.println("✅ Weekly MIS Mail sent successfully!");
+        } catch (Exception e) {
+            System.err.println("❌ Error sending Weekly MIS Mail: " + e.getMessage());
+        }
+    }
 }

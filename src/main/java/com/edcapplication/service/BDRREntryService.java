@@ -196,36 +196,65 @@ public class BDRREntryService {
 			SubEquipment subEquipment, Problem problem) {
 		String subject = "New BDRR Entry Created - #" + entry.getBdrrNumber();
 		String htmlBody = """
-				Hello Team,
-				A new BDRR entry has been created:
-				BDRR No: %s
-				Status: %s
-				TestBed: %s
-				Equipment: %s - %s
-				Problem: %s
-				Raised By: %s (Shift: %s)
-				Raised On: %s
+				<html>
+				  <body style="font-family: Arial, sans-serif; color: #333; background-color: #f8f9fa; padding: 20px;">
+				    <div style="max-width: 700px; margin: auto; background: #fff; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); padding: 20px;">
+				      <h2 style="color: #2E86C1; border-bottom: 2px solid #2E86C1; padding-bottom: 6px;">New BDRR Entry Created</h2>
+				      <p style="font-size: 15px;">Hello Team,</p>
+				      <p style="font-size: 15px;">A new <b>BDRR entry</b> has been created with the following details:</p>
 
-				Breakdown Description: %s
-				Initial Analysis: %s
+				      <table border="1" cellspacing="0" cellpadding="8" style="border-collapse: collapse; width: 100%; font-size: 14px;">
+				        <tr style="background-color: #f2f2f2;">
+				          <th align="left" style="width: 30%;">Field</th>
+				          <th align="left">Details</th>
+				        </tr>
+				        <tr><td><b>BDRR No</b></td><td>%s</td></tr>
+				        <tr><td><b>Status</b></td><td>%s</td></tr>
+				        <tr><td><b>Test Bed</b></td><td>%s</td></tr>
+				        <tr><td><b>Equipment</b></td><td>%s - %s</td></tr>
+				        <tr><td><b>Problem</b></td><td>%s</td></tr>
+				        <tr><td><b>Raised By</b></td><td>%s</td></tr>
+				        <tr><td><b>Shift</b></td><td>%s</td></tr>
+				        <tr><td><b>Raised On</b></td><td>%s</td></tr>
+				        <tr><td><b>Breakdown Description</b></td><td>%s</td></tr>
+				        <tr><td><b>Initial Analysis</b></td><td>%s</td></tr>
+				      </table>
 
-				Please log in for full details.
-				Regards,
-				BDRR System
-				""".formatted(entry.getBdrrNumber(), dao.getStatus(), testBed.getName(), equipment.getEquipmentName(),
-				subEquipment.getSubequipmentName(), problem.getProblemName(), dao.getRaisedBy(), dao.getShift(),
-				dao.getRaisedOn(), dao.getBreakDownDescription(), dao.getInitialAnalysis());
+				      <p style="margin-top: 20px; font-size: 14px;">Please log in to the <b>BDRR System</b> for full details and updates.</p>
 
+				      <p style="font-size: 14px;">Regards,<br><b>BDRR System</b></p>
+				    </div>
+				  </body>
+				</html>
+				""".formatted(
+				    entry.getBdrrNumber(),
+				    dao.getStatus(),
+				    testBed.getName(),
+				    equipment.getEquipmentName(),
+				    subEquipment.getSubequipmentName(),
+				    problem.getProblemName(),
+				    dao.getRaisedBy(),
+				    dao.getShift(),
+				    dao.getRaisedOn(),
+				    dao.getBreakDownDescription(),
+				    dao.getInitialAnalysis()
+				);
 		/*List<String> toList = new ArrayList<>();
 		if (dao.getRaisedBy() != null)
 			toList.add(dao.getRaisedBy());
 		if (dao.getAreaAttender() != null)
 			toList.add(dao.getAreaAttender());*/
 		
-		String[] toList = new String[] {
+		/*String[] toList = new String[] {
 				dao.getRaisedBy()+"@vecv.in",
 				dao.getAreaAttender()+"@vecv.in"
+	        };*/
+		
+		String[] toList = new String[] {
+	            "rkraghuvanshi@vecv.in",
+	            "askushwah2@VECV.IN"
 	        };
+
 		  //BCC recipients
         String[] bcc = new String[] {
             "rkraghuvanshi@vecv.in",
@@ -243,28 +272,65 @@ public class BDRREntryService {
 
 		String subject = "BDRR Closed - #" + entry.getBdrrNumber();
 		String htmlBody = """
-				Hello Team,
-				The following BDRR entry has been CLOSED:
-				BDRR No: %s
-				TestBed: %s
-				Equipment: %s - %s
-				Problem: %s
-				Root Cause: %s
-				Action Taken: %s
-				Closed By: %s
-				Closing Date: %s
-				Remarks: %s
+				<html>
+				  <body style="font-family: Arial, sans-serif; color: #333; background-color: #f8f9fa; padding: 20px;">
+				    <div style="max-width: 700px; margin: auto; background: #fff; border-radius: 8px;
+				                box-shadow: 0 2px 8px rgba(0,0,0,0.1); padding: 20px;">
+				      <h2 style="color: #117A65; border-bottom: 2px solid #117A65; padding-bottom: 6px;">
+				        BDRR Entry Closed
+				      </h2>
 
-				Regards,
-				BDRR System
-				""".formatted(entry.getBdrrNumber(), testBed.getName(), equipment.getEquipmentName(),
-				subEquipment.getSubequipmentName(), problem.getProblemName(), dao.getSolutionRootCause(),
-				dao.getSolutionActionTaken(), dao.getSolutionBy(), dao.getClosingDate(), dao.getWorkDoneDescription());
+				      <p style="font-size: 15px;">Hello Team,</p>
+				      <p style="font-size: 15px;">The following <b>BDRR entry</b> has been <b style='color:#117A65;'>CLOSED</b>:</p>
 
-        String[] toList = new String[] {
+				      <table border="1" cellspacing="0" cellpadding="8"
+				             style="border-collapse: collapse; width: 100%; font-size: 14px;">
+				        <tr style="background-color: #f2f2f2;">
+				          <th align="left" style="width: 30%;">Field</th>
+				          <th align="left">Details</th>
+				        </tr>
+				        <tr><td><b>BDRR No</b></td><td>%s</td></tr>
+				        <tr><td><b>Test Bed</b></td><td>%s</td></tr>
+				        <tr><td><b>Equipment</b></td><td>%s - %s</td></tr>
+				        <tr><td><b>Problem</b></td><td>%s</td></tr>
+				        <tr><td><b>Root Cause</b></td><td>%s</td></tr>
+				        <tr><td><b>Action Taken</b></td><td>%s</td></tr>
+				        <tr><td><b>Closed By</b></td><td>%s</td></tr>
+				        <tr><td><b>Closing Date</b></td><td>%s</td></tr>
+				        <tr><td><b>Remarks</b></td><td>%s</td></tr>
+				      </table>
+
+				      <p style="margin-top: 20px; font-size: 14px;">
+				        Thank you for your support.<br>
+				        Please log in to the <b>BDRR System</b> for full closure details.
+				      </p>
+
+				      <p style="font-size: 14px;">Regards,<br><b>EDC Admin</b></p>
+				    </div>
+				  </body>
+				</html>
+				""".formatted(
+				    entry.getBdrrNumber(),
+				    testBed.getName(),
+				    equipment.getEquipmentName(),
+				    subEquipment.getSubequipmentName(),
+				    problem.getProblemName(),
+				    dao.getSolutionRootCause(),
+				    dao.getSolutionActionTaken(),
+				    dao.getSolutionBy(),
+				    dao.getClosingDate(),
+				    dao.getWorkDoneDescription()
+				);
+
+        /*String[] toList = new String[] {
 				dao.getRaisedBy()+"@vecv.in",
 				dao.getAreaAttender()+"@vecv.in"
-	        };
+	        };*/
+        
+        String[] toList = new String[] {
+                "rkraghuvanshi@vecv.in",
+                "askushwah2@VECV.IN"
+            };
 		  //BCC recipients
         String[] bcc = new String[] {
             "rkraghuvanshi@vecv.in",
