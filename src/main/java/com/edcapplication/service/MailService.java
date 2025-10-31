@@ -1,6 +1,9 @@
 package com.edcapplication.service;
 
+import java.io.File;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.FileSystemResource;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -65,6 +68,51 @@ public class MailService {
             System.out.println("HTML mail sent successfully to: " + to);
         } catch (MessagingException e) {
             System.err.println("❌ Error sending HTML mail: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+    
+    /**
+     * Send HTML mail with attachments and optional BCC.
+     * @param from      Sender email address
+     * @param to        Array of main recipients
+     * @param subject   Email subject
+     * @param htmlBody  Email body (HTML supported)
+     * @param attachments Array of file paths (optional)
+     * @param bcc       Array of BCC recipients (optional)
+     */
+    public void sendMailHTMLFile(String from, String[] to, String subject, String htmlBody, String[] attachments, String... bcc) {
+        try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true); // true => multipart
+
+            //System.out.println("sendMailHTMLFile Before HTML mail sent successfully from: " + from+" :subject: "+subject);
+            
+            helper.setFrom(from);
+            helper.setTo(to);
+            helper.setSubject(subject);
+            helper.setText(htmlBody, true); // true => enable HTML
+
+            if (bcc != null && bcc.length > 0) {
+                helper.setBcc(bcc);
+            }
+
+            // Add attachments (if any)
+            if (attachments != null) {
+                for (String path : attachments) {
+                    File file = new File(path);
+                    if (file.exists()) {
+                        FileSystemResource resource = new FileSystemResource(file);
+                        helper.addAttachment(file.getName(), resource);
+                    }
+                }
+            }
+
+            mailSender.send(message);
+            System.out.println("✅ Email sent successfully to: " + String.join(", ", to));
+
+        } catch (MessagingException e) {
+            System.err.println("❌ Failed to send email: " + e.getMessage());
             e.printStackTrace();
         }
     }

@@ -39,7 +39,7 @@ public class TestBedMisScheduler {
     // Runs every day at 08:00 AM (adjust cron as needed)
     //@Scheduled(cron = "0 0 8 * * ?")
     // ⏰ Runs every day at 12:05 PM
-    @Scheduled(cron = "0 41 8 * * *")
+    @Scheduled(cron = "0 10 11 * * *")
     public void sendDailyMisMail() {
 
         LocalDate today = LocalDate.now();
@@ -68,9 +68,12 @@ public class TestBedMisScheduler {
             "askushwah2@VECV.IN"
         };
         
-        System.out.println("Before Sending mail ***************************** " + formattedDate);
-		mailService.sendMail(bcc, subject, htmlBody, bcc);
+        String[] attachments = {"C:/reports/daily-report.xlsx"};
+        
+        System.out.println("Before Sending mail tttttttttttttttttttttttttttttttttt " + formattedDate);
+		//mailService.sendMail(bcc, subject, htmlBody, bcc);
         //mailService.sendHtmlMail("rkraghuvanshi@vecv.in",subject,htmlBody);
+		mailService.sendMailHTMLFile("idmadmin@VECV.IN",to,subject + LocalDate.now(),htmlBody,attachments,bcc);
 
         System.out.println("MIS Mail sent for " + formattedDate);
     }

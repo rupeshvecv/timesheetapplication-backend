@@ -154,7 +154,7 @@ public class TestBedEntryService {
     //Mail sender
     private void sendCreationMail(TestBed testBed, TestBedEntryDao dao) {
         String subject = "New TestBed Entry Created";
-        String body = """
+        String htmlBody = """
                 Hello Team,
                 A new TestBed entry has been created.
                 TestBed: %s
@@ -178,7 +178,8 @@ public class TestBedEntryService {
             "askushwah2@VECV.IN"
         };
         if (dao.getTestBedUser() != null) {
-			mailService.sendMail(new String[]{dao.getTestBedUser()}, subject, body, bcc);
+			//mailService.sendMail(new String[]{dao.getTestBedUser()}, subject, body, bcc);
+			mailService.sendMailHTMLFile("idmadmin@VECV.IN",new String[]{dao.getTestBedUser()},subject,htmlBody,new String[]{},bcc);
 		}
     }
     

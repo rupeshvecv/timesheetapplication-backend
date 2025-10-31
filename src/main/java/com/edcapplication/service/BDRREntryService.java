@@ -195,7 +195,7 @@ public class BDRREntryService {
     private void sendCreationMail(BDRREntry entry, BDRREntryDao dao, TestBed testBed, Equipment equipment,
 			SubEquipment subEquipment, Problem problem) {
 		String subject = "New BDRR Entry Created - #" + entry.getBdrrNumber();
-		String body = """
+		String htmlBody = """
 				Hello Team,
 				A new BDRR entry has been created:
 				BDRR No: %s
@@ -216,20 +216,25 @@ public class BDRREntryService {
 				subEquipment.getSubequipmentName(), problem.getProblemName(), dao.getRaisedBy(), dao.getShift(),
 				dao.getRaisedOn(), dao.getBreakDownDescription(), dao.getInitialAnalysis());
 
-		List<String> toList = new ArrayList<>();
+		/*List<String> toList = new ArrayList<>();
 		if (dao.getRaisedBy() != null)
 			toList.add(dao.getRaisedBy());
 		if (dao.getAreaAttender() != null)
-			toList.add(dao.getAreaAttender());
+			toList.add(dao.getAreaAttender());*/
 		
+		String[] toList = new String[] {
+				dao.getRaisedBy()+"@vecv.in",
+				dao.getAreaAttender()+"@vecv.in"
+	        };
 		  //BCC recipients
         String[] bcc = new String[] {
             "rkraghuvanshi@vecv.in",
             "askushwah2@VECV.IN"
         };
 
-		if (!toList.isEmpty()) {
-			mailService.sendMail(toList.toArray(new String[0]), subject, body, bcc);
+		if (toList.length>0) {
+			//mailService.sendMail(toList.toArray(new String[0]), subject, body, bcc);
+        	mailService.sendMailHTMLFile("idmadmin@VECV.IN",toList,subject,htmlBody,new String[]{},bcc);
 		}
 	}
     
@@ -237,7 +242,7 @@ public class BDRREntryService {
 			SubEquipment subEquipment, Problem problem) {
 
 		String subject = "BDRR Closed - #" + entry.getBdrrNumber();
-		String body = """
+		String htmlBody = """
 				Hello Team,
 				The following BDRR entry has been CLOSED:
 				BDRR No: %s
@@ -256,20 +261,19 @@ public class BDRREntryService {
 				subEquipment.getSubequipmentName(), problem.getProblemName(), dao.getSolutionRootCause(),
 				dao.getSolutionActionTaken(), dao.getSolutionBy(), dao.getClosingDate(), dao.getWorkDoneDescription());
 
-		List<String> toList = new ArrayList<>();
-		if (dao.getRaisedBy() != null)
-			toList.add(dao.getRaisedBy());
-		if (dao.getAreaAttender() != null)
-			toList.add(dao.getAreaAttender());
-
-		//BCC recipients
+        String[] toList = new String[] {
+				dao.getRaisedBy()+"@vecv.in",
+				dao.getAreaAttender()+"@vecv.in"
+	        };
+		  //BCC recipients
         String[] bcc = new String[] {
             "rkraghuvanshi@vecv.in",
             "askushwah2@VECV.IN"
         };
 
-		if (!toList.isEmpty()) {
-			mailService.sendMail(toList.toArray(new String[0]), subject, body, bcc);
+		if (toList.length>0) {
+			//mailService.sendMail(toList.toArray(new String[0]), subject, body, bcc);
+        	mailService.sendMailHTMLFile("idmadmin@VECV.IN",toList,subject,htmlBody,new String[]{},bcc);
 		}
 	}
     
