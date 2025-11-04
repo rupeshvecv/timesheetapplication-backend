@@ -328,7 +328,7 @@ public class TestBedMisScheduler {
         StringBuilder html = new StringBuilder();
         html.append("<html>");
         html.append("<body style='font-family:Arial, sans-serif;'>");
-        html.append("<h2 style='color:#2E86C1;'>Weekly Test Bed Entry MIS</h2>");
+        html.append("<h2 style='color:#2E86C1; border-bottom:3px solid #2E86C1; padding-bottom:6px;'>Weekly Test Bed Entry MIS</h2>");
         html.append("<p><b>Duration:</b> ").append(startDate).append(" to ").append(endDate).append("</p>");
         html.append("<table border='1' cellspacing='0' cellpadding='6' style='border-collapse:collapse;width:80%;'>");
         html.append("<tr style='background-color:#f2f2f2;text-align:center;'>");

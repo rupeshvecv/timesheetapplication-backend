@@ -18,18 +18,19 @@ public class FeignAuthInterceptor implements RequestInterceptor {
     public void apply(RequestTemplate template) {
         String token = null;
 
-        // 1️⃣ Try to get JWT token from current HTTP request
+        //Try to get JWT token from current HTTP request
         ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
         if (attributes != null) {
             HttpServletRequest request = attributes.getRequest();
             token = request.getHeader("Authorization");
         }
+        System.out.println("FeignAuthInterceptor.apply( JWT token from current HTTP request token ) "+token);
 
-        // 2️⃣ If no JWT (background thread), add internal service token
+        //If no JWT (background thread), add internal service token
         if (token == null) {
             token = "Internal " + internalSecret;
         }
-        System.out.println("FeignAuthInterceptor.apply(token) "+token);
+        System.out.println("FeignAuthInterceptor.apply(If no JWT (background thread), add internal service token) "+token);
         template.header("Authorization", token);
     }
 }

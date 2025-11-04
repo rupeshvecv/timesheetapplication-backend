@@ -115,7 +115,7 @@ public class BDRREntryService {
         BDRREntry savedEntry = bdrrEntryRepository.save(entry);
         
         try {
-            sendCreationMail(savedEntry, dao, testBed, equipment, subEquipment, problem);
+            sendCreationBDRRMail(savedEntry, dao, testBed, equipment, subEquipment, problem);
         } catch (Exception e) {
             throw new MailSendException("Failed to send creation email", e);
         }
@@ -177,7 +177,7 @@ public class BDRREntryService {
         //Send mail if status is Closed or closing date set
         if ("Closed".equalsIgnoreCase(dao.getStatus()) || dao.getClosingDate() != null) {
             try {
-                sendClosingMail(savedEntry, dao, testBed, equipment, subEquipment, problem);
+            	sendClosingBDRRMail(savedEntry, dao, testBed, equipment, subEquipment, problem);
             } catch (Exception e) {
                 throw new MailSendException("Failed to send closing email", e);
             }
@@ -192,53 +192,51 @@ public class BDRREntryService {
         bdrrEntryRepository.deleteById(id);
     }
     
-    private void sendCreationMail(BDRREntry entry, BDRREntryDao dao, TestBed testBed, Equipment equipment,
-			SubEquipment subEquipment, Problem problem) {
-		String subject = "New BDRR Entry Created - #" + entry.getBdrrNumber();
-		String htmlBody = """
-				<html>
-				  <body style="font-family: Arial, sans-serif; color: #333; background-color: #f8f9fa; padding: 20px;">
-				    <div style="max-width: 700px; margin: auto; background: #fff; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); padding: 20px;">
-				      <h2 style="color: #2E86C1; border-bottom: 2px solid #2E86C1; padding-bottom: 6px;">New BDRR Entry Created</h2>
-				      <p style="font-size: 15px;">Hello Team,</p>
-				      <p style="font-size: 15px;">A new <b>BDRR entry</b> has been created with the following details:</p>
+    private void sendCreationBDRRMail(BDRREntry entry, BDRREntryDao dao, TestBed testBed, Equipment equipment,SubEquipment subEquipment, Problem problem)
+    {
+    	String subject = "New BDRR Entry Created - #" + entry.getBdrrNumber();
 
-				      <table border="1" cellspacing="0" cellpadding="8" style="border-collapse: collapse; width: 100%; font-size: 14px;">
-				        <tr style="background-color: #f2f2f2;">
-				          <th align="left" style="width: 30%;">Field</th>
-				          <th align="left">Details</th>
-				        </tr>
-				        <tr><td><b>BDRR No</b></td><td>%s</td></tr>
-				        <tr><td><b>Status</b></td><td>%s</td></tr>
-				        <tr><td><b>Test Bed</b></td><td>%s</td></tr>
-				        <tr><td><b>Equipment</b></td><td>%s - %s</td></tr>
-				        <tr><td><b>Problem</b></td><td>%s</td></tr>
-				        <tr><td><b>Raised By</b></td><td>%s</td></tr>
-				        <tr><td><b>Shift</b></td><td>%s</td></tr>
-				        <tr><td><b>Raised On</b></td><td>%s</td></tr>
-				        <tr><td><b>Breakdown Description</b></td><td>%s</td></tr>
-				        <tr><td><b>Initial Analysis</b></td><td>%s</td></tr>
-				      </table>
+    	String htmlBody =
+    	    "<html>" +
+    	    "<body style='font-family: Calibri, Arial, sans-serif; background-color:#f9f9f9; color:#333; padding:20px;'>" +
+    	    "<div style='max-width:1000px; margin:auto; background:#fff; border-radius:8px; " +
+    	    "box-shadow:0 2px 8px rgba(0,0,0,0.1); padding:20px;'>" +
 
-				      <p style="margin-top: 20px; font-size: 14px;">Please log in to the <b>BDRR System</b> for full details and updates.</p>
+    	    "<h2 style='color:#2E86C1; border-bottom:3px solid #2E86C1; padding-bottom:6px;'>New BDRR Entry Created</h2>" +
 
-				      <p style="font-size: 14px;">Regards,<br><b>BDRR System</b></p>
-				    </div>
-				  </body>
-				</html>
-				""".formatted(
-				    entry.getBdrrNumber(),
-				    dao.getStatus(),
-				    testBed.getName(),
-				    equipment.getEquipmentName(),
-				    subEquipment.getSubequipmentName(),
-				    problem.getProblemName(),
-				    dao.getRaisedBy(),
-				    dao.getShift(),
-				    dao.getRaisedOn(),
-				    dao.getBreakDownDescription(),
-				    dao.getInitialAnalysis()
-				);
+    	    "<p style='font-size:15px;'><b style='color:#C0392B;'>Dear Team,</b><br>" +
+    	    "A new <b>BDRR entry</b> has been created in the <b>EDC System</b>. Please find the details below:</p>" +
+
+    	    "<table border='1' cellspacing='0' cellpadding='8' " +
+    	    "style='border-collapse:collapse;width:100%;font-size:14px;text-align:left;border:1px solid #ddd;'>" +
+    	    "<thead>" +
+    	    "<tr style='background-color:#34495E; color:white;'>" +
+    	    "<th style='padding:8px;width:30%;'>Field</th>" +
+    	    "<th style='padding:8px;'>Details</th>" +
+    	    "</tr>" +
+    	    "</thead>" +
+    	    "<tbody>" +
+
+    	    "<tr style='background-color:#f8f9fa;'><td><b>BDRR No</b></td><td>" + entry.getBdrrNumber() + "</td></tr>" +
+    	    "<tr><td><b>Status</b></td><td>" + dao.getStatus() + "</td></tr>" +
+    	    "<tr style='background-color:#f8f9fa;'><td><b>Test Bed</b></td><td>" + testBed.getName() + "</td></tr>" +
+    	    "<tr><td><b>Equipment</b></td><td>" + equipment.getEquipmentName() + " - " + subEquipment.getSubequipmentName() + "</td></tr>" +
+    	    "<tr style='background-color:#f8f9fa;'><td><b>Problem</b></td><td>" + problem.getProblemName() + "</td></tr>" +
+    	    "<tr><td><b>Raised By</b></td><td>" + dao.getRaisedBy() + "</td></tr>" +
+    	    "<tr style='background-color:#f8f9fa;'><td><b>Shift</b></td><td>" + dao.getShift() + "</td></tr>" +
+    	    "<tr><td><b>Raised On</b></td><td>" + dao.getRaisedOn() + "</td></tr>" +
+    	    "<tr style='background-color:#f8f9fa;'><td><b>Breakdown Description</b></td><td>" + dao.getBreakDownDescription() + "</td></tr>" +
+    	    "<tr><td><b>Initial Analysis</b></td><td>" + dao.getInitialAnalysis() + "</td></tr>" +
+
+    	    "</tbody>" +
+    	    "</table>" +
+
+    	    "<p style='margin-top:20px;font-size:14px;'>Please log in to the <b>BDRR System</b> for full details and updates.</p>" +
+    	    "<p style='font-size:14px;'>Regards,<br><b>EDC System</b></p>" +
+    	    "</div>" +
+    	    "</body>" +
+    	    "</html>";
+    	
 		/*List<String> toList = new ArrayList<>();
 		if (dao.getRaisedBy() != null)
 			toList.add(dao.getRaisedBy());
@@ -267,60 +265,50 @@ public class BDRREntryService {
 		}
 	}
     
-    private void sendClosingMail(BDRREntry entry, BDRREntryDao dao, TestBed testBed, Equipment equipment,
-			SubEquipment subEquipment, Problem problem) {
-
+    private void sendClosingBDRRMail(BDRREntry entry, BDRREntryDao dao, TestBed testBed, Equipment equipment, SubEquipment subEquipment, Problem problem) 
+    {
 		String subject = "BDRR Closed - #" + entry.getBdrrNumber();
-		String htmlBody = """
-				<html>
-				  <body style="font-family: Arial, sans-serif; color: #333; background-color: #f8f9fa; padding: 20px;">
-				    <div style="max-width: 700px; margin: auto; background: #fff; border-radius: 8px;
-				                box-shadow: 0 2px 8px rgba(0,0,0,0.1); padding: 20px;">
-				      <h2 style="color: #117A65; border-bottom: 2px solid #117A65; padding-bottom: 6px;">
-				        BDRR Entry Closed
-				      </h2>
 
-				      <p style="font-size: 15px;">Hello Team,</p>
-				      <p style="font-size: 15px;">The following <b>BDRR entry</b> has been <b style='color:#117A65;'>CLOSED</b>:</p>
+    	String htmlBody =
+    	    "<html>" +
+    	    "<body style='font-family: Calibri, Arial, sans-serif; background-color:#f9f9f9; color:#333; padding:20px;'>" +
+    	    "<div style='max-width:1000px; margin:auto; background:#fff; border-radius:8px; " +
+    	    "box-shadow:0 2px 8px rgba(0,0,0,0.1); padding:20px;'>" +
 
-				      <table border="1" cellspacing="0" cellpadding="8"
-				             style="border-collapse: collapse; width: 100%; font-size: 14px;">
-				        <tr style="background-color: #f2f2f2;">
-				          <th align="left" style="width: 30%;">Field</th>
-				          <th align="left">Details</th>
-				        </tr>
-				        <tr><td><b>BDRR No</b></td><td>%s</td></tr>
-				        <tr><td><b>Test Bed</b></td><td>%s</td></tr>
-				        <tr><td><b>Equipment</b></td><td>%s - %s</td></tr>
-				        <tr><td><b>Problem</b></td><td>%s</td></tr>
-				        <tr><td><b>Root Cause</b></td><td>%s</td></tr>
-				        <tr><td><b>Action Taken</b></td><td>%s</td></tr>
-				        <tr><td><b>Closed By</b></td><td>%s</td></tr>
-				        <tr><td><b>Closing Date</b></td><td>%s</td></tr>
-				        <tr><td><b>Remarks</b></td><td>%s</td></tr>
-				      </table>
+    	    "<h2 style='color:#2E86C1; border-bottom:3px solid #2E86C1; padding-bottom:6px;'>New BDRR Entry Created</h2>" +
 
-				      <p style="margin-top: 20px; font-size: 14px;">
-				        Thank you for your support.<br>
-				        Please log in to the <b>BDRR System</b> for full closure details.
-				      </p>
+    	    "<p style='font-size:15px;'><b style='color:#C0392B;'>Dear Team,</b><br>" +
+    	    "A new <b>BDRR entry</b> has been created in the <b>EDC System</b>. Please find the details below:</p>" +
 
-				      <p style="font-size: 14px;">Regards,<br><b>EDC Admin</b></p>
-				    </div>
-				  </body>
-				</html>
-				""".formatted(
-				    entry.getBdrrNumber(),
-				    testBed.getName(),
-				    equipment.getEquipmentName(),
-				    subEquipment.getSubequipmentName(),
-				    problem.getProblemName(),
-				    dao.getSolutionRootCause(),
-				    dao.getSolutionActionTaken(),
-				    dao.getSolutionBy(),
-				    dao.getClosingDate(),
-				    dao.getWorkDoneDescription()
-				);
+    	    "<table border='1' cellspacing='0' cellpadding='8' " +
+    	    "style='border-collapse:collapse;width:100%;font-size:14px;text-align:left;border:1px solid #ddd;'>" +
+    	    "<thead>" +
+    	    "<tr style='background-color:#34495E; color:white;'>" +
+    	    "<th style='padding:8px;width:30%;'>Field</th>" +
+    	    "<th style='padding:8px;'>Details</th>" +
+    	    "</tr>" +
+    	    "</thead>" +
+    	    "<tbody>" +
+
+    	    "<tr style='background-color:#f8f9fa;'><td><b>BDRR No</b></td><td>" + entry.getBdrrNumber() + "</td></tr>" +
+    	    "<tr><td><b>Status</b></td><td>" + dao.getStatus() + "</td></tr>" +
+    	    "<tr style='background-color:#f8f9fa;'><td><b>Test Bed</b></td><td>" + testBed.getName() + "</td></tr>" +
+    	    "<tr><td><b>Equipment</b></td><td>" + equipment.getEquipmentName() + " - " + subEquipment.getSubequipmentName() + "</td></tr>" +
+    	    "<tr style='background-color:#f8f9fa;'><td><b>Problem</b></td><td>" + problem.getProblemName() + "</td></tr>" +
+    	    "<tr><td><b>Raised By</b></td><td>" + dao.getRaisedBy() + "</td></tr>" +
+    	    "<tr style='background-color:#f8f9fa;'><td><b>Shift</b></td><td>" + dao.getShift() + "</td></tr>" +
+    	    "<tr><td><b>Raised On</b></td><td>" + dao.getRaisedOn() + "</td></tr>" +
+    	    "<tr style='background-color:#f8f9fa;'><td><b>Breakdown Description</b></td><td>" + dao.getBreakDownDescription() + "</td></tr>" +
+    	    "<tr><td><b>Initial Analysis</b></td><td>" + dao.getInitialAnalysis() + "</td></tr>" +
+
+    	    "</tbody>" +
+    	    "</table>" +
+
+    	    "<p style='margin-top:20px;font-size:14px;'>Please log in to the <b>BDRR System</b> for full details and updates.</p>" +
+    	    "<p style='font-size:14px;'>Regards,<br><b>EDC System</b></p>" +
+    	    "</div>" +
+    	    "</body>" +
+    	    "</html>";
 
         /*String[] toList = new String[] {
 				dao.getRaisedBy()+"@vecv.in",

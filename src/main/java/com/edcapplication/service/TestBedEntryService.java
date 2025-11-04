@@ -94,7 +94,7 @@ public class TestBedEntryService {
 
         //Send notification mail
         try {
-            sendCreationMail(testBed, dao);
+            sendCreationTestBedMail(testBed, dao);
         } catch (Exception e) {
             throw new MailSendException("Failed to send TestBedEntry creation email", e);
         }
@@ -152,49 +152,65 @@ public class TestBedEntryService {
     }
     
     //Mail sender
-    private void sendCreationMail(TestBed testBed, TestBedEntryDao dao) {
+    private void sendCreationTestBedMail(TestBed testBed, TestBedEntryDao dao)
+    {
     	String subject = "New TestBed Entry Created";
 
-    	String htmlBody = """
-    	<html>
-    	  <body style="font-family: Arial, sans-serif; color: #333; background-color: #f8f9fa; padding: 20px;">
-    	    <div style="max-width: 700px; margin: auto; background: #fff; border-radius: 8px;
-    	                box-shadow: 0 2px 8px rgba(0,0,0,0.1); padding: 20px;">
-    	      <h2 style="color: #1F618D; border-bottom: 2px solid #1F618D; padding-bottom: 6px;">
-    	        New TestBed Entry Created
-    	      </h2>
+    	String htmlBody =
+		  "<html>"
+		  + "<body style='font-family: Calibri, Arial, sans-serif; background-color:#f9f9f9; color:#333; padding:20px;'>"
+		  + "<div style='max-width:1000px; margin:auto; background:#fff; border-radius:8px; "
+		  + "box-shadow:0 2px 8px rgba(0,0,0,0.1); padding:20px;'>"
 
-    	      <p style="font-size: 15px;">Hello Team,</p>
-    	      <p style="font-size: 15px;">
-    	        A new <b>TestBed entry</b> has been created. Please find the details below:
-    	      </p>
+		  // Header
+		  + "<h2 style='color:#2E86C1; border-bottom:3px solid #2E86C1; padding-bottom:6px;'>"
+		  + "New Test Bed Entry Created</h2>"
 
-    	      <table border="1" cellspacing="0" cellpadding="8"
-    	             style="border-collapse: collapse; width: 100%; font-size: 14px;">
-    	        <tr style="background-color: #f2f2f2;">
-    	          <th align="left" style="width: 30%;">Field</th>
-    	          <th align="left">Details</th>
-    	        </tr>
-    	        <tr><td><b>TestBed</b></td><td>%s</td></tr>
-    	        <tr><td><b>Raised By</b></td><td>%s</td></tr>
-    	        <tr><td><b>Shift</b></td><td>%s</td></tr>
-    	        <tr><td><b>Date</b></td><td>%s</td></tr>
-    	      </table>
+		  // Greeting
+		  + "<p style='font-size:15px;'><b style='color:#C0392B;'>Dear Team,</b><br>"
+		  + "A new <b>Test Bed entry</b> has been created in the <b>EDC System</b>. Please find the details below:</p>"
 
-    	      <p style="margin-top: 20px; font-size: 14px;">
-    	        Please log in to the <b>EDC System</b> for more information.
-    	      </p>
+		  // Table start
+		  + "<table style='border-collapse:collapse; width:100%; font-size:14px; text-align:left; "
+		  + "border:1px solid #ddd;'>"
+		  + "<thead>"
+		  + "<tr style='background-color:#34495E; color:white;'>"
+		  + "<th style='padding:8px; width:30%; border:1px solid #ddd;'>Field</th>"
+		  + "<th style='padding:8px; border:1px solid #ddd;'>Details</th>"
+		  + "</tr>"
+		  + "</thead>"
 
-    	      <p style="font-size: 14px;">Regards,<br><b>EDC System</b></p>
-    	    </div>
-    	  </body>
-    	</html>
-    	""".formatted(
-    	    testBed.getName(),
-    	    dao.getRaisedBy(),
-    	    dao.getShift(),
-    	    dao.getRaisedOn()
-    	);
+		  // Table body with values
+		  + "<tbody>"
+		  + "<tr style='background-color:#f8f9fa;'>"
+		  + "<td style='padding:8px; border:1px solid #ddd;'><b>Test Bed</b></td>"
+		  + "<td style='padding:8px; border:1px solid #ddd;'>" + testBed.getName() + "</td>"
+		  + "</tr>"
+
+		  + "<tr>"
+		  + "<td style='padding:8px; border:1px solid #ddd;'><b>Raised By</b></td>"
+		  + "<td style='padding:8px; border:1px solid #ddd;'>" + dao.getRaisedBy() + "</td>"
+		  + "</tr>"
+
+		  + "<tr style='background-color:#f8f9fa;'>"
+		  + "<td style='padding:8px; border:1px solid #ddd;'><b>Shift</b></td>"
+		  + "<td style='padding:8px; border:1px solid #ddd;'>" + dao.getShift() + "</td>"
+		  + "</tr>"
+
+		  + "<tr>"
+		  + "<td style='padding:8px; border:1px solid #ddd;'><b>Date</b></td>"
+		  + "<td style='padding:8px; border:1px solid #ddd;'>" + dao.getRaisedOn() + "</td>"
+		  + "</tr>"
+
+		  + "</tbody>"
+		  + "</table>"
+
+		  // Footer message
+		  + "<p style='margin-top:20px; font-size:14px;'>Please log in to the <b>EDC System</b> for more information.</p>"
+		  + "<p style='font-size:14px;'>Regards,<br><b>EDC Admin</b></p>"
+		  + "</div>"
+		  + "</body>"
+		  + "</html>";
 
       //BCC recipients
         String[] bcc = new String[] {
@@ -220,4 +236,18 @@ public class TestBedEntryService {
     public List<TestBedEntry> getEntriesByDateRange(LocalDate startDate, LocalDate endDate) {
         return testBedEntryRepository.findById_RaisedOnBetween(startDate, endDate);
     }
+    
+ // helper to avoid nulls and basic HTML escaping
+    private String nvl(String s) {
+        return s == null ? "" : s;
+    }
+    private String escapeHtml(String s) {
+        if (s == null) return "";
+        return s.replace("&", "&amp;")
+                .replace("<", "&lt;")
+                .replace(">", "&gt;")
+                .replace("\"", "&quot;")
+                .replace("'", "&#x27;");
+    }
+
 }
