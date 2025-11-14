@@ -75,8 +75,17 @@ public class BDRREntryService {
         //Step 1: Generate dynamic BDRR number
         //long count = bdrrEntryRepository.count(); // total entries in the table
         //String generatedBdrrNumber = "BDRR-" + (count + 1);
-        Long maxId = bdrrEntryRepository.findMaxId().orElse(0L);
-        String generatedBdrrNumber = "BDRR-" + (maxId + 1);
+        //Long count = bdrrEntryRepository.findMaxId().orElse(0L);
+        
+        LocalDate raisedOnDate = dao.getRaisedOn();
+
+        if (raisedOnDate == null) {
+            throw new BadRequestException("RaisedOn date is required to generate BDRR number");
+        }
+
+        //Count entries for this date
+        Long count = bdrrEntryRepository.countByRaisedOn(raisedOnDate);
+        String generatedBdrrNumber = "BDRR-" + (count + 1);
 
         BDRREntry entry = new BDRREntry();
         //entry.setBdrrNumber(dao.getBdrrNumber());
