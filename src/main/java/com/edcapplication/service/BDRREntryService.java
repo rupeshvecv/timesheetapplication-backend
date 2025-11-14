@@ -225,8 +225,6 @@ public class BDRREntryService {
     	    "<tr><td><b>Raised By</b></td><td>" + dao.getRaisedBy() + "</td></tr>" +
     	    "<tr style='background-color:#f8f9fa;'><td><b>Shift</b></td><td>" + dao.getShift() + "</td></tr>" +
     	    "<tr><td><b>Raised On</b></td><td>" + dao.getRaisedOn() + "</td></tr>" +
-    	    "<tr style='background-color:#f8f9fa;'><td><b>Breakdown Description</b></td><td>" + dao.getBreakDownDescription() + "</td></tr>" +
-    	    "<tr><td><b>Initial Analysis</b></td><td>" + dao.getInitialAnalysis() + "</td></tr>" +
 
     	    "</tbody>" +
     	    "</table>" +
