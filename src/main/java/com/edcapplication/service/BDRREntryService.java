@@ -307,6 +307,9 @@ public class BDRREntryService {
     	    "<tr><td><b>Raised On</b></td><td>" + dao.getRaisedOn() + "</td></tr>" +
     	    "<tr style='background-color:#f8f9fa;'><td><b>Breakdown Description</b></td><td>" + dao.getBreakDownDescription() + "</td></tr>" +
     	    "<tr><td><b>Initial Analysis</b></td><td>" + dao.getInitialAnalysis() + "</td></tr>" +
+    	    "<tr><td><b>Work Done Description</b></td><td>" + dao.getWorkDoneDescription() + "</td></tr>" +
+    	    "<tr><td><b>Root Cause</b></td><td>" + dao.getSolutionRootCause() + "</td></tr>" +
+    	    "<tr><td><b>Action Taken</b></td><td>" + dao.getSolutionActionTaken() + "</td></tr>" +
 
     	    "</tbody>" +
     	    "</table>" +
