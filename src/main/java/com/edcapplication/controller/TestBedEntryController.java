@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import com.edcapplication.dao.TestBedEntryDao;
 import com.edcapplication.model.TestBedEntry;
 import com.edcapplication.model.TestBedEntryEmbeddedId;
+import com.edcapplication.projection.TestBedEntryProjection;
 import com.edcapplication.service.TestBedEntryService;
 
 @RestController
@@ -21,9 +22,15 @@ public class TestBedEntryController {
     @Autowired
     private TestBedEntryService testBedEntryService;
 
-    @GetMapping("/testBedEntrys")
+    @GetMapping("/testBedEntrys/all")
     public List<TestBedEntry> getAllTestBedEntries() {
         return testBedEntryService.getAllTestBedEntries();
+    }
+    
+    @GetMapping("/testBedEntrys")
+    public ResponseEntity<List<TestBedEntryProjection>> getAllTestBedEntriess() {
+        List<TestBedEntryProjection> entries = testBedEntryService.getAllTestBedEntriess();
+        return ResponseEntity.ok(entries);
     }
 
     @GetMapping("/testBedEntrys/{testbedId}/{raisedOn}/{shift}")
@@ -57,7 +64,7 @@ public class TestBedEntryController {
     }
     
     //Get entries by testbedId and date range
-    @GetMapping("/testBedEntrys/byTestBedID/{testbedId}/{startDate}/{endDate}")
+    /*@GetMapping("/testBedEntrys/byTestBedID/{testbedId}/{startDate}/{endDate}")
     public ResponseEntity<List<TestBedEntry>> getTestBedEntriesByTestbedIdAndDateRange(
             @PathVariable("testbedId") Long testbedId,
             @PathVariable("startDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
@@ -65,6 +72,18 @@ public class TestBedEntryController {
 
         List<TestBedEntry> entries = testBedEntryService.getTestBedEntriesByTestbedIdAndDateRange(testbedId, startDate, endDate);
         return ResponseEntity.ok(entries);
+    }*/
+    
+    @GetMapping("/testBedEntrys/byTestBedID/{testbedId}/{startDate}/{endDate}")
+    public ResponseEntity<List<TestBedEntryProjection>> getTestBedEntriesByTestbedIdAndDateRange(
+            @PathVariable Long testbedId,
+            @PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
+
+        List<TestBedEntryProjection> data =
+                testBedEntryService.getTestBedEntriesByTestbedIdAndDateRange(testbedId, startDate, endDate);
+
+        return ResponseEntity.ok(data);
     }
 
     @GetMapping("/testBedEntrys/byshift")
@@ -76,12 +95,23 @@ public class TestBedEntryController {
         return testBedEntryService.getEntriesByShiftAndDateRange(shift, startDate, endDate);
     }
 
-    @GetMapping("/testBedEntrys/byDateRange")
+   /*@GetMapping("/testBedEntrys/byDateRange")
     public List<TestBedEntry> getEntriesByDateRange(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
 
         return testBedEntryService.getEntriesByDateRange(startDate, endDate);
+    }*/
+    
+    @GetMapping("/testBedEntrys/byDateRange")
+    public ResponseEntity<List<TestBedEntryProjection>> getEntriesByDateRange(
+            @PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
+
+        List<TestBedEntryProjection> data =
+                testBedEntryService.getTestBedEntriesByDateRange(startDate, endDate);
+
+        return ResponseEntity.ok(data);
     }
     
 }

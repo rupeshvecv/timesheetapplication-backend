@@ -16,6 +16,7 @@ import com.edcapplication.model.Project;
 import com.edcapplication.model.TestBed;
 import com.edcapplication.model.TestBedEntry;
 import com.edcapplication.model.TestBedEntryEmbeddedId;
+import com.edcapplication.projection.TestBedEntryProjection;
 import com.edcapplication.repository.ProjectRepository;
 import com.edcapplication.repository.TestBedEntryRepository;
 import com.edcapplication.repository.TestBedRepository;
@@ -40,6 +41,10 @@ public class TestBedEntryService {
 
     public List<TestBedEntry> getAllTestBedEntries() {
         return testBedEntryRepository.findAll();
+    }
+    
+    public List<TestBedEntryProjection> getAllTestBedEntriess() {
+        return testBedEntryRepository.findAllEntriesProjected();
     }
 
     public TestBedEntry getTestBedEntryById(TestBedEntryEmbeddedId id) {
@@ -225,8 +230,12 @@ public class TestBedEntryService {
     }
     
     //Fetch list of entries by testbedId
-    public List<TestBedEntry> getTestBedEntriesByTestbedIdAndDateRange(Long testbedId, LocalDate startDate, LocalDate endDate) {
+    /*public List<TestBedEntry> getTestBedEntriesByTestbedIdAndDateRange(Long testbedId, LocalDate startDate, LocalDate endDate) {
         return testBedEntryRepository.findById_TestbedIdAndId_RaisedOnBetween(testbedId, startDate, endDate);
+    }*/
+    
+    public List<TestBedEntryProjection> getTestBedEntriesByTestbedIdAndDateRange(Long testbedId, LocalDate startDate, LocalDate endDate) {
+        return testBedEntryRepository.findAllByTestBedDateRangeProjected(testbedId, startDate, endDate);
     }
 
     public List<TestBedEntry> getEntriesByShiftAndDateRange(String shift, LocalDate startDate, LocalDate endDate) {
@@ -237,7 +246,10 @@ public class TestBedEntryService {
         return testBedEntryRepository.findById_RaisedOnBetween(startDate, endDate);
     }
     
- // helper to avoid nulls and basic HTML escaping
+    public List<TestBedEntryProjection> getTestBedEntriesByDateRange(LocalDate startDate, LocalDate endDate) {
+        return testBedEntryRepository.findAllByDateRangeProjected(startDate, endDate);
+    }
+    //helper to avoid nulls and basic HTML escaping
     private String nvl(String s) {
         return s == null ? "" : s;
     }
