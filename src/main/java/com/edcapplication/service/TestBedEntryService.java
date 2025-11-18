@@ -238,9 +238,14 @@ public class TestBedEntryService {
         return testBedEntryRepository.findAllByTestBedDateRangeProjected(testbedId, startDate, endDate);
     }
 
-    public List<TestBedEntry> getEntriesByShiftAndDateRange(String shift, LocalDate startDate, LocalDate endDate) {
+    /*public List<TestBedEntry> getEntriesByShiftAndDateRange(String shift, LocalDate startDate, LocalDate endDate) {
         return testBedEntryRepository.findById_ShiftAndId_RaisedOnBetween(shift, startDate, endDate);
+    }*/
+    
+    public List<TestBedEntryProjection> getEntriesByShiftAndDateRange(String shift, LocalDate startDate, LocalDate endDate) {
+        return testBedEntryRepository.findAllByShiftDateRangeProjected(shift, startDate, endDate);
     }
+
 
     public List<TestBedEntry> getEntriesByDateRange(LocalDate startDate, LocalDate endDate) {
         return testBedEntryRepository.findById_RaisedOnBetween(startDate, endDate);

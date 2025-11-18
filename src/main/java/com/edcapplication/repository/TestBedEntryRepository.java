@@ -157,4 +157,58 @@ public interface TestBedEntryRepository extends JpaRepository<TestBedEntry, Test
             ORDER BY t.id.raisedOn ASC
             """)
     List<TestBedEntryProjection> findAllEntriesProjected();
+    
+    @Query("""
+            SELECT 
+                t.id.testbedId AS testbedId,
+                t.id.raisedOn AS raisedOn,
+                t.id.shift AS shift,
+                t.time AS time,
+                t.raisedBy AS raisedBy,
+                t.testBedUser AS testBedUser,
+
+                p.id AS projectId,
+                p.projectCode AS projectName,
+
+                t.plannedHours AS plannedHours,
+                t.uptimeHours AS uptimeHours,
+                t.utilizationHours AS utilizationHours,
+                t.validationHours AS validationHours,
+
+                t.testDescription AS testDescription,
+                t.testDescriptionHours AS testDescriptionHours,
+
+                t.workonEngineRemarks AS workonEngineRemarks,
+                t.workonEngineHours AS workonEngineHours,
+
+                t.setUpRemarks AS setUpRemarks,
+                t.setUpHours AS setUpHours,
+
+                t.breakDownRemarks AS breakDownRemarks,
+                t.breakDownHours AS breakDownHours,
+
+                t.noManPowerRemarks AS noManPowerRemarks,
+                t.noManPowerHours AS noManPowerHours,
+
+                t.powerCutRemarks AS powerCutRemarks,
+                t.powerCutHours AS powerCutHours,
+
+                t.anyOtherRemarks AS anyOtherRemarks,
+                t.anyOtherHours AS anyOtherHours,
+
+                t.coummulativeDescription AS coummulativeDescription,
+                t.totalSum AS totalSum
+
+            FROM TestBedEntry t
+            LEFT JOIN t.project p
+            WHERE 
+                t.id.shift = :shift
+                AND t.id.raisedOn BETWEEN :startDate AND :endDate
+            ORDER BY t.id.raisedOn ASC, t.time ASC
+            """)
+    List<TestBedEntryProjection> findAllByShiftDateRangeProjected(
+            @Param("shift") String shift,
+            @Param("startDate") LocalDate startDate,
+            @Param("endDate") LocalDate endDate);
+
 }

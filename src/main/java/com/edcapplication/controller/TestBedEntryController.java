@@ -86,13 +86,25 @@ public class TestBedEntryController {
         return ResponseEntity.ok(data);
     }
 
-    @GetMapping("/testBedEntrys/byshift")
+    /*@GetMapping("/testBedEntrys/byshift")
     public List<TestBedEntry> getEntriesByShiftAndDateRange(
             @RequestParam String shift,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
 
         return testBedEntryService.getEntriesByShiftAndDateRange(shift, startDate, endDate);
+    }*/
+    
+    @GetMapping("/testBedEntrys/byshift")
+    public ResponseEntity<List<TestBedEntryProjection>> getEntriesByShiftAndDateRange(
+    		@RequestParam String shift,
+    		@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+    		@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
+
+        List<TestBedEntryProjection> data =
+                testBedEntryService.getEntriesByShiftAndDateRange(shift, startDate, endDate);
+
+        return ResponseEntity.ok(data);
     }
 
    /*@GetMapping("/testBedEntrys/byDateRange")
@@ -105,8 +117,8 @@ public class TestBedEntryController {
     
     @GetMapping("/testBedEntrys/byDateRange")
     public ResponseEntity<List<TestBedEntryProjection>> getEntriesByDateRange(
-            @PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
-            @PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
+    		@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+    		@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
 
         List<TestBedEntryProjection> data =
                 testBedEntryService.getTestBedEntriesByDateRange(startDate, endDate);
