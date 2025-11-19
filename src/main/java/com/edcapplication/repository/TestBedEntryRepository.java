@@ -67,7 +67,7 @@ public interface TestBedEntryRepository extends JpaRepository<TestBedEntry, Test
             WHERE t.id.raisedOn BETWEEN :startDate AND :endDate
             ORDER BY t.id.raisedOn ASC
             """)
-    List<TestBedEntryProjection> findAllByDateRangeProjected(
+    List<TestBedEntryProjection> findAllTestBedEntryByDateRangeProjected(
             @Param("startDate") LocalDate startDate,
             @Param("endDate") LocalDate endDate);
     
@@ -107,7 +107,7 @@ public interface TestBedEntryRepository extends JpaRepository<TestBedEntry, Test
         WHERE t.id.testbedId = :testbedId 
           AND t.id.raisedOn BETWEEN :startDate AND :endDate
         """)
-    List<TestBedEntryProjection> findAllByTestBedDateRangeProjected(
+    List<TestBedEntryProjection> findAllByTestBedEntryDateRangeProjected(
             @Param("testbedId") Long testbedId,
             @Param("startDate") LocalDate startDate,
             @Param("endDate") LocalDate endDate);
@@ -156,7 +156,7 @@ public interface TestBedEntryRepository extends JpaRepository<TestBedEntry, Test
             LEFT JOIN t.project p
             ORDER BY t.id.raisedOn ASC
             """)
-    List<TestBedEntryProjection> findAllEntriesProjected();
+    List<TestBedEntryProjection> findAllTestBedEntryEntriesProjected();
     
     @Query("""
             SELECT 

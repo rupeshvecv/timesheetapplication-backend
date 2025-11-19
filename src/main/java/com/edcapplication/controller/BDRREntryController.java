@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 
 import com.edcapplication.dao.BDRREntryDao;
 import com.edcapplication.model.BDRREntry;
+import com.edcapplication.projection.BDRREntryProjection;
 import com.edcapplication.service.BDRREntryService;
 
 @RestController
@@ -19,8 +20,13 @@ public class BDRREntryController {
 
     @Autowired
     private BDRREntryService bdrrEntryService;
-
+    
     @GetMapping("/bdrrEntries")
+    public ResponseEntity<List<BDRREntryProjection>> getAllBDRRProjected() {
+        return ResponseEntity.ok(bdrrEntryService.getAllBDRREntriesProjected());
+    }
+    
+    @GetMapping("/bdrrEntries/all")
     public List<BDRREntry> getBDRREntries() {
         return bdrrEntryService.getBDRREntries();
     }
@@ -45,8 +51,8 @@ public class BDRREntryController {
         bdrrEntryService.deleteBDRREntry(id);
     }
     
-    @GetMapping("/bdrrEntries/filter")
-    public ResponseEntity<List<BDRREntry>> getBDRREntries(
+    @GetMapping("/bdrrEntries/filterwise")
+    public ResponseEntity<List<BDRREntry>> getBDRREntriesByDynamicFilters(
             @RequestParam(required = false) String status,
             @RequestParam(required = false) String raisedBy,
             @RequestParam(required = false) String attender,
@@ -59,4 +65,27 @@ public class BDRREntryController {
         );
         return ResponseEntity.ok(entries);
     }
+    
+    @GetMapping("/bdrrEntries/filter")
+    public ResponseEntity<List<BDRREntryProjection>> getBDRREntries(
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) String raisedBy,
+            @RequestParam(required = false) String attender,
+            @RequestParam(required = false) Long testbedId,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate
+    ) {
+
+        List<BDRREntryProjection> entries = bdrrEntryService.getBDRREntriesByFilters(
+                status,
+                raisedBy,
+                attender,
+                testbedId,
+                startDate,
+                endDate
+        );
+
+        return ResponseEntity.ok(entries);
+    }
+
 }

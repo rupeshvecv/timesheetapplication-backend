@@ -44,7 +44,7 @@ public class TestBedEntryService {
     }
     
     public List<TestBedEntryProjection> getAllTestBedEntriess() {
-        return testBedEntryRepository.findAllEntriesProjected();
+        return testBedEntryRepository.findAllTestBedEntryEntriesProjected();
     }
 
     public TestBedEntry getTestBedEntryById(TestBedEntryEmbeddedId id) {
@@ -235,7 +235,7 @@ public class TestBedEntryService {
     }*/
     
     public List<TestBedEntryProjection> getTestBedEntriesByTestbedIdAndDateRange(Long testbedId, LocalDate startDate, LocalDate endDate) {
-        return testBedEntryRepository.findAllByTestBedDateRangeProjected(testbedId, startDate, endDate);
+        return testBedEntryRepository.findAllByTestBedEntryDateRangeProjected(testbedId, startDate, endDate);
     }
 
     /*public List<TestBedEntry> getEntriesByShiftAndDateRange(String shift, LocalDate startDate, LocalDate endDate) {
@@ -252,7 +252,7 @@ public class TestBedEntryService {
     }
     
     public List<TestBedEntryProjection> getTestBedEntriesByDateRange(LocalDate startDate, LocalDate endDate) {
-        return testBedEntryRepository.findAllByDateRangeProjected(startDate, endDate);
+        return testBedEntryRepository.findAllTestBedEntryByDateRangeProjected(startDate, endDate);
     }
     //helper to avoid nulls and basic HTML escaping
     private String nvl(String s) {

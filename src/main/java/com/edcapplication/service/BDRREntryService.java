@@ -16,6 +16,7 @@ import com.edcapplication.model.Equipment;
 import com.edcapplication.model.Problem;
 import com.edcapplication.model.SubEquipment;
 import com.edcapplication.model.TestBed;
+import com.edcapplication.projection.BDRREntryProjection;
 import com.edcapplication.repository.BDRREntryRepository;
 import com.edcapplication.repository.EquipmentRepository;
 import com.edcapplication.repository.ProblemRepository;
@@ -43,6 +44,11 @@ public class BDRREntryService {
     @Autowired
     private MailService mailService; // <-- Injected mail service
 
+    
+    public List<BDRREntryProjection> getAllBDRREntriesProjected() {
+        return bdrrEntryRepository.findAllBDRREntryProjected();
+    }
+    
     public List<BDRREntry> getBDRREntries() {
         return bdrrEntryRepository.findAll();
     }
@@ -383,4 +389,23 @@ public class BDRREntryService {
 
 		return bdrrEntryRepository.findAll(spec);
 	}
+	
+	public List<BDRREntryProjection> getBDRREntriesByFilters(
+	        String status,
+	        String raisedBy,
+	        String attender,
+	        Long testbedId,
+	        LocalDate startDate,
+	        LocalDate endDate
+	) {
+	    return bdrrEntryRepository.findAllBDRREntryByFilters(
+	            status,
+	            raisedBy,
+	            attender,
+	            testbedId,
+	            startDate,
+	            endDate
+	    );
+	}
+
 }
