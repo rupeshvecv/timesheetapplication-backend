@@ -1,10 +1,12 @@
 package com.edcapplication.service;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import com.edcapplication.dao.BDRREntryDao;
@@ -12,11 +14,14 @@ import com.edcapplication.exception.BadRequestException;
 import com.edcapplication.exception.MailSendException;
 import com.edcapplication.exception.ResourceNotFoundException;
 import com.edcapplication.model.BDRREntry;
+import com.edcapplication.model.BDRREntryAudit;
 import com.edcapplication.model.Equipment;
 import com.edcapplication.model.Problem;
 import com.edcapplication.model.SubEquipment;
 import com.edcapplication.model.TestBed;
+import com.edcapplication.model.TestBedEntryAudit;
 import com.edcapplication.projection.BDRREntryProjection;
+import com.edcapplication.repository.BDRREntryAuditHistoryRepository;
 import com.edcapplication.repository.BDRREntryRepository;
 import com.edcapplication.repository.EquipmentRepository;
 import com.edcapplication.repository.ProblemRepository;
@@ -44,6 +49,8 @@ public class BDRREntryService {
     @Autowired
     private MailService mailService; // <-- Injected mail service
 
+    @Autowired
+    private BDRREntryAuditHistoryRepository bdrrEntryAuditHistoryRepository;
     
     public List<BDRREntryProjection> getAllBDRREntriesProjected() {
         return bdrrEntryRepository.findAllBDRREntryProjected();
@@ -138,7 +145,7 @@ public class BDRREntryService {
         return savedEntry;
     }
     
-    public BDRREntry updateBDRREntry(Long id, BDRREntryDao dao) {
+    public BDRREntry updateBDRREntry(Long id, BDRREntryDao dao) throws Exception {
     	
     	if (dao.getTestbedId() == null || dao.getEquipmentId() == null || dao.getProblemId() == null) {
             throw new BadRequestException("Missing required IDs for TestBed, Equipment, or Problem");
@@ -154,6 +161,9 @@ public class BDRREntryService {
                 .orElseThrow(() -> new ResourceNotFoundException("SubEquipment not found"));
         Problem problem = problemRepository.findById(dao.getProblemId())
                 .orElseThrow(() -> new ResourceNotFoundException("Problem not found"));
+        
+        String historyVal = "Status: "+dao.getStatus()+" :Attender: "+dao.getAttender()+" :SolutionBy: "+dao.getSolutionBy()+" :Problem: "+problem.getProblemName();
+        saveTestBedAudit(dao.getBdrrNumber(),testBed.getName(), dao.getShift(),historyVal,"UPDATE");
 
         existing.setBdrrNumber(dao.getBdrrNumber());
         existing.setStatus(dao.getStatus());
@@ -200,10 +210,23 @@ public class BDRREntryService {
         return savedEntry;
     }
 
-    public void deleteBDRREntry(Long id) {
+    public void deleteBDRREntry(Long id) throws Exception {
         if (!bdrrEntryRepository.existsById(id)) {
             throw new ResourceNotFoundException("BDRR Entry not found with ID: " + id);
         }
+        
+        BDRREntry existing = bdrrEntryRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("BDRR Entry not found with ID: " + id));
+        
+        TestBed testBed = testBedRepository.findById(existing.getTestBed().getId())
+                .orElseThrow(() -> new ResourceNotFoundException("TestBed not found"));
+        
+        Problem problem = problemRepository.findById(existing.getProblem().getId())
+                .orElseThrow(() -> new ResourceNotFoundException("Problem not found"));
+        
+        String historyVal = "Status: "+existing.getStatus()+" :Attender: "+existing.getAttender()+" :SolutionBy: "+existing.getSolutionBy()+" :Problem: "+problem.getProblemName();
+        saveTestBedAudit(existing.getBdrrNumber(),testBed.getName(), existing.getShift(),historyVal,"DELETE");
+
         bdrrEntryRepository.deleteById(id);
     }
     
@@ -408,4 +431,25 @@ public class BDRREntryService {
 	    );
 	}
 
+	private String getLoggedInUsername() {
+        if (SecurityContextHolder.getContext().getAuthentication() == null) {
+            return "SYSTEM"; // fallback
+        }
+        return SecurityContextHolder.getContext().getAuthentication().getName();
+    }
+	
+	private void saveTestBedAudit(String bdrrNumber,String testBed, String shift,String historyVal,String operationType) throws Exception {
+        BDRREntryAudit auditRecord = new BDRREntryAudit();
+        String currentUser 				= getLoggedInUsername();// <--- FROM JWT
+        
+        auditRecord.setBdrrNumber(bdrrNumber);
+        auditRecord.setTestBedName(testBed);
+        auditRecord.setShift(shift);
+        auditRecord.setFieldValues(historyVal);
+        auditRecord.setOperationType(operationType);
+        auditRecord.setChangedBy(currentUser);  // <--- store JWT USERNAME
+        auditRecord.setChangedOn(LocalDateTime.now());
+
+        bdrrEntryAuditHistoryRepository.save(auditRecord);
+    }
 }

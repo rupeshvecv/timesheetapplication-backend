@@ -42,12 +42,12 @@ public class BDRREntryController {
     }
 
     @PutMapping("/bdrrEntries/{id}")
-    public BDRREntry updateBDRREntry(@PathVariable Long id, @RequestBody BDRREntryDao dao) {
+    public BDRREntry updateBDRREntry(@PathVariable Long id, @RequestBody BDRREntryDao dao) throws Exception {
         return bdrrEntryService.updateBDRREntry(id, dao);
     }
 
     @DeleteMapping("/bdrrEntries/{id}")
-    public void deleteBDRREntry(@PathVariable Long id) {
+    public void deleteBDRREntry(@PathVariable Long id) throws Exception {
         bdrrEntryService.deleteBDRREntry(id);
     }
     

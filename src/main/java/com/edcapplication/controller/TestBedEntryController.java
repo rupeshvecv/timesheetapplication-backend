@@ -21,7 +21,7 @@ public class TestBedEntryController {
 
     @Autowired
     private TestBedEntryService testBedEntryService;
-
+    
     @GetMapping("/testBedEntrys/all")
     public List<TestBedEntry> getAllTestBedEntries() {
         return testBedEntryService.getAllTestBedEntries();
@@ -49,7 +49,7 @@ public class TestBedEntryController {
     }
 
     @PutMapping("/testBedEntrys")
-    public TestBedEntry updateTestBedEntry(@RequestBody TestBedEntryDao dao) {
+    public TestBedEntry updateTestBedEntry(@RequestBody TestBedEntryDao dao) throws Exception {
         return testBedEntryService.updateTestBedEntry(dao);
     }
 
@@ -57,7 +57,7 @@ public class TestBedEntryController {
     public void deleteTestBedEntry(
             @PathVariable("testbedId") Long testbedId,
             @PathVariable("raisedOn") String raisedOn,
-            @PathVariable("shift") String shift) {
+            @PathVariable("shift") String shift) throws Exception {
     	 LocalDate raisedOnDate = LocalDate.parse(raisedOn);  // ✅ Fix: Parse String to LocalDate
          TestBedEntryEmbeddedId id = new TestBedEntryEmbeddedId(testbedId, raisedOnDate, shift);
         testBedEntryService.deleteTestBedEntry(id);

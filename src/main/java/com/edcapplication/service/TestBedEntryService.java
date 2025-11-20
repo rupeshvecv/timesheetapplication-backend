@@ -1,11 +1,13 @@
 package com.edcapplication.service;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import com.edcapplication.dao.TestBedEntryDao;
@@ -15,9 +17,11 @@ import com.edcapplication.exception.ResourceNotFoundException;
 import com.edcapplication.model.Project;
 import com.edcapplication.model.TestBed;
 import com.edcapplication.model.TestBedEntry;
+import com.edcapplication.model.TestBedEntryAudit;
 import com.edcapplication.model.TestBedEntryEmbeddedId;
 import com.edcapplication.projection.TestBedEntryProjection;
 import com.edcapplication.repository.ProjectRepository;
+import com.edcapplication.repository.TestBedEntryAuditHistoryRepository;
 import com.edcapplication.repository.TestBedEntryRepository;
 import com.edcapplication.repository.TestBedRepository;
 
@@ -30,6 +34,9 @@ public class TestBedEntryService {
     
     @Autowired
     private MailService mailService;  //<-- Mail service
+    
+    @Autowired
+    private TestBedEntryAuditHistoryRepository testBedEntryAuditHistoryRepository;
 
     public TestBedEntryService(TestBedEntryRepository testBedEntryRepository,
                                TestBedRepository testBedRepository,
@@ -107,13 +114,20 @@ public class TestBedEntryService {
         return savedEntry;
     }
 
-    public TestBedEntry updateTestBedEntry(TestBedEntryDao dao) {
+    public TestBedEntry updateTestBedEntry(TestBedEntryDao dao) throws Exception {
     	if (dao.getTestbedId() == null || dao.getRaisedOn() == null || dao.getShift() == null) {
             throw new BadRequestException("Missing required identifiers for update");
         }
         TestBedEntryEmbeddedId id = new TestBedEntryEmbeddedId(dao.getTestbedId(), dao.getRaisedOn(), dao.getShift());
         TestBedEntry existing = testBedEntryRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("TestBedEntry not found for update"));
+
+        TestBed testBed = testBedRepository.findById(existing.getId().getTestbedId())
+                .orElseThrow(() -> new ResourceNotFoundException("TestBed not found"));
+        
+        //Audit history snapshot BEFORE updating
+        String historyVal = "TestUser-> "+dao.getTestBedUser()+" :PlannedHours: "+dao.getPlannedHours()+" :UptimeHours: "+dao.getUptimeHours()+" :UtilizationHours: "+dao.getUtilizationHours();
+        saveTestBedAudit(testBed.getName(),existing.getId().getShift(),historyVal,"UPDATE");
 
         Project project = null;
         if (dao.getProjectId() != null) {
@@ -149,10 +163,22 @@ public class TestBedEntryService {
         return testBedEntryRepository.save(existing);
     }
 
-    public void deleteTestBedEntry(TestBedEntryEmbeddedId id) {
+    public void deleteTestBedEntry(TestBedEntryEmbeddedId id) throws Exception {
         if (!testBedEntryRepository.existsById(id)) {
             throw new ResourceNotFoundException("TestBed Entry not found with ID: " + id);
         }
+        
+        //Step-1: Fetch the existing entry for audit
+        TestBedEntry existingEntry = testBedEntryRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("TestBed Entry not found with ID: " + id));
+
+        TestBed testBed = testBedRepository.findById(existingEntry.getId().getTestbedId())
+                .orElseThrow(() -> new ResourceNotFoundException("TestBed not found"));
+        
+      //Audit history snapshot BEFORE Deleting
+        String historyVal = "TestUser-> "+existingEntry.getTestBedUser()+" :PlannedHours: "+existingEntry.getPlannedHours()+" :UptimeHours: "+existingEntry.getUptimeHours()+" :UtilizationHours: "+existingEntry.getUtilizationHours();
+        saveTestBedAudit(testBed.getName(),existingEntry.getId().getShift(),historyVal,"DELETE");
+        
         testBedEntryRepository.deleteById(id);
     }
     
@@ -267,4 +293,25 @@ public class TestBedEntryService {
                 .replace("'", "&#x27;");
     }
 
+    private String getLoggedInUsername() {
+        if (SecurityContextHolder.getContext().getAuthentication() == null) {
+            return "SYSTEM"; // fallback
+        }
+        return SecurityContextHolder.getContext().getAuthentication().getName();
+    }
+    
+    private void saveTestBedAudit(String testBed, String shift,String historyVal,String operationType) throws Exception {
+        TestBedEntryAudit auditRecord = new TestBedEntryAudit();
+        String currentUser 				= getLoggedInUsername();// <--- FROM JWT
+        
+        auditRecord.setTestBedName(testBed);
+        //auditRecord.setTestbedId(existingEntry.getId().getTestbedId());
+        auditRecord.setShift(shift);
+        auditRecord.setFieldValues(historyVal);
+        auditRecord.setOperationType(operationType);
+        auditRecord.setChangedBy(currentUser);  // <--- store JWT USERNAME
+        auditRecord.setChangedOn(LocalDateTime.now());
+
+        testBedEntryAuditHistoryRepository.save(auditRecord);
+    }
 }
