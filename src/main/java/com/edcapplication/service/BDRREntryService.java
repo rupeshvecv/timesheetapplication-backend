@@ -349,7 +349,7 @@ public class BDRREntryService {
     	    "<tr style='background-color:#f8f9fa;'><td><b>Shift</b></td><td>" + dao.getShift() + "</td></tr>" +
     	    "<tr><td><b>Raised Date</b></td><td>" + dao.getRaisedOn() + "</td></tr>" +
     	    "<tr><td><b>Closing Date</b></td><td>" + dao.getClosingDate() + "</td></tr>" +
-    	    "<tr><td><b>Time consumed in BDRR closure</b></td><td>" + hours +"HOURS -"+ minutes  + "MINUTES</td></tr>" +
+    	    "<tr><td><b>Time consumed in BDRR closure</b></td><td>" + hours +" HOURS -"+ minutes  + " MINUTES</td></tr>" +
     	    "<tr style='background-color:#f8f9fa;'><td><b>Breakdown Description</b></td><td>" + dao.getBreakDownDescription() + "</td></tr>" +
     	    "<tr><td><b>Initial Analysis</b></td><td>" + dao.getInitialAnalysis() + "</td></tr>" +
     	    "<tr><td><b>Work Done Description</b></td><td>" + dao.getWorkDoneDescription() + "</td></tr>" +
