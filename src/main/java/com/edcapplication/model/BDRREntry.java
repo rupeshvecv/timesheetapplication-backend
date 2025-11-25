@@ -1,6 +1,7 @@
 package com.edcapplication.model;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -27,7 +28,7 @@ public class BDRREntry {
 	private String status;
 	
 	@Column(name= "raised_on")
-	private LocalDate raisedOn;
+	private LocalDateTime raisedOn;
 	
 	@Column(name= "raised_by")
 	private String raisedBy;
@@ -64,7 +65,7 @@ public class BDRREntry {
 	private String attender;
 	
 	@Column(name= "closing_date")
-	private LocalDate closingDate;
+	private LocalDateTime closingDate;
 	
 	@Column(name= "break_down_description")
 	private String breakDownDescription;
@@ -85,16 +86,16 @@ public class BDRREntry {
 	private String solutionBy;
 	
 	@Column(name= "solution_given_on")
-	private LocalDate solutionGivenOn;
+	private LocalDateTime solutionGivenOn;
 	
 	@Column(name= "bdrr_of_date")
-	private LocalDate bdrrOfDate;
+	private LocalDateTime bdrrOfDate;
 	
 	@Column(name= "area_attender")
 	private String areaAttender;
 	
 	@Column(name= "target_date")
-	private LocalDate targetDate;
+	private LocalDateTime targetDate;
 	
 	@Column(name= "part_used")
 	private String partUsed;
@@ -111,11 +112,11 @@ public class BDRREntry {
 	public BDRREntry() {
 		super();
 	}
-	public BDRREntry(Long id, String bdrrNumber, String status, LocalDate raisedOn, String raisedBy, String shift,
+	public BDRREntry(Long id, String bdrrNumber, String status, LocalDateTime raisedOn, String raisedBy, String shift,
 			TestBed testBed, Equipment equipment, SubEquipment subEquipment, Problem problem, String testAffected,
 			String alternateArrangement, String suggestion, String attender, String solutionRootCause,
-			String solutionActionTaken, String solutionBy, LocalDate solutionGivenOn, LocalDate bdrrOfDate,
-			String areaAttender, LocalDate targetDate, LocalDate closingDate, String partUsed, String partNumber,
+			String solutionActionTaken, String solutionBy, LocalDateTime solutionGivenOn, LocalDateTime bdrrOfDate,
+			String areaAttender, LocalDateTime targetDate, LocalDateTime closingDate, String partUsed, String partNumber,
 			String partDescriptions, String quantity, String breakDownDescription, String initialAnalysis,
 			String workDoneDescription) {
 		super();
@@ -175,11 +176,11 @@ public class BDRREntry {
 		this.status = status;
 	}
 
-	public LocalDate getRaisedOn() {
+	public LocalDateTime getRaisedOn() {
 		return raisedOn;
 	}
 
-	public void setRaisedOn(LocalDate raisedOn) {
+	public void setRaisedOn(LocalDateTime raisedOn) {
 		this.raisedOn = raisedOn;
 	}
 
@@ -287,19 +288,19 @@ public class BDRREntry {
 		this.solutionBy = solutionBy;
 	}
 
-	public LocalDate getSolutionGivenOn() {
+	public LocalDateTime getSolutionGivenOn() {
 		return solutionGivenOn;
 	}
 
-	public void setSolutionGivenOn(LocalDate solutionGivenOn) {
+	public void setSolutionGivenOn(LocalDateTime solutionGivenOn) {
 		this.solutionGivenOn = solutionGivenOn;
 	}
 
-	public LocalDate getBdrrOfDate() {
+	public LocalDateTime getBdrrOfDate() {
 		return bdrrOfDate;
 	}
 
-	public void setBdrrOfDate(LocalDate bdrrOfDate) {
+	public void setBdrrOfDate(LocalDateTime bdrrOfDate) {
 		this.bdrrOfDate = bdrrOfDate;
 	}
 
@@ -311,19 +312,19 @@ public class BDRREntry {
 		this.areaAttender = areaAttender;
 	}
 
-	public LocalDate getTargetDate() {
+	public LocalDateTime getTargetDate() {
 		return targetDate;
 	}
 
-	public void setTargetDate(LocalDate targetDate) {
+	public void setTargetDate(LocalDateTime targetDate) {
 		this.targetDate = targetDate;
 	}
 
-	public LocalDate getClosingDate() {
+	public LocalDateTime getClosingDate() {
 		return closingDate;
 	}
 
-	public void setClosingDate(LocalDate closingDate) {
+	public void setClosingDate(LocalDateTime closingDate) {
 		this.closingDate = closingDate;
 	}
 

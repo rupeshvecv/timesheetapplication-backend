@@ -1,12 +1,13 @@
 package com.edcapplication.dao;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 public class BDRREntryDao {
 
     private String bdrrNumber;
     private String status;
-    private LocalDate raisedOn;
+    private LocalDateTime raisedOn;
     private String raisedBy;
     private String shift;
     private Long testbedId;
@@ -20,11 +21,11 @@ public class BDRREntryDao {
     private String solutionRootCause;
     private String solutionActionTaken;
     private String solutionBy;
-    private LocalDate solutionGivenOn;
-    private LocalDate bdrrOfDate;
+    private LocalDateTime solutionGivenOn;
+    private LocalDateTime bdrrOfDate;
     private String areaAttender;
-    private LocalDate targetDate;
-    private LocalDate closingDate;
+    private LocalDateTime targetDate;
+    private LocalDateTime closingDate;
     private String partUsed;
     private String partNumber;
     private String partDescriptions;
@@ -36,10 +37,10 @@ public class BDRREntryDao {
     public BDRREntryDao() {
     }
 
-    public BDRREntryDao(String bdrrNumber, String status, LocalDate raisedOn, String raisedBy, String shift, Long testbedId,
+    public BDRREntryDao(String bdrrNumber, String status, LocalDateTime raisedOn, String raisedBy, String shift, Long testbedId,
     		Long equipmentId, Long subEquipmentId, Long problemId, String testAffected, String alternateArrangement,
                         String suggestion, String attender, String solutionRootCause, String solutionActionTaken, String solutionBy,
-                        LocalDate solutionGivenOn, LocalDate bdrrOfDate, String areaAttender, LocalDate targetDate, LocalDate closingDate,
+                        LocalDateTime solutionGivenOn, LocalDateTime bdrrOfDate, String areaAttender, LocalDateTime targetDate, LocalDateTime closingDate,
                         String partUsed, String partNumber, String partDescriptions, String quantity, String breakDownDescription,
                         String initialAnalysis, String workDoneDescription) {
         this.bdrrNumber = bdrrNumber;
@@ -90,11 +91,11 @@ public class BDRREntryDao {
         this.status = status;
     }
 
-    public LocalDate getRaisedOn() {
+    public LocalDateTime getRaisedOn() {
         return raisedOn;
     }
 
-    public void setRaisedOn(LocalDate raisedOn) {
+    public void setRaisedOn(LocalDateTime raisedOn) {
         this.raisedOn = raisedOn;
     }
 
@@ -202,19 +203,19 @@ public class BDRREntryDao {
         this.solutionBy = solutionBy;
     }
 
-    public LocalDate getSolutionGivenOn() {
+    public LocalDateTime getSolutionGivenOn() {
         return solutionGivenOn;
     }
 
-    public void setSolutionGivenOn(LocalDate solutionGivenOn) {
+    public void setSolutionGivenOn(LocalDateTime solutionGivenOn) {
         this.solutionGivenOn = solutionGivenOn;
     }
 
-    public LocalDate getBdrrOfDate() {
+    public LocalDateTime getBdrrOfDate() {
         return bdrrOfDate;
     }
 
-    public void setBdrrOfDate(LocalDate bdrrOfDate) {
+    public void setBdrrOfDate(LocalDateTime bdrrOfDate) {
         this.bdrrOfDate = bdrrOfDate;
     }
 
@@ -226,19 +227,19 @@ public class BDRREntryDao {
         this.areaAttender = areaAttender;
     }
 
-    public LocalDate getTargetDate() {
+    public LocalDateTime getTargetDate() {
         return targetDate;
     }
 
-    public void setTargetDate(LocalDate targetDate) {
+    public void setTargetDate(LocalDateTime targetDate) {
         this.targetDate = targetDate;
     }
 
-    public LocalDate getClosingDate() {
+    public LocalDateTime getClosingDate() {
         return closingDate;
     }
 
-    public void setClosingDate(LocalDate closingDate) {
+    public void setClosingDate(LocalDateTime closingDate) {
         this.closingDate = closingDate;
     }
 

@@ -1,6 +1,7 @@
 package com.edcapplication.controller;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -57,8 +58,8 @@ public class BDRREntryController {
             @RequestParam(required = false) String raisedBy,
             @RequestParam(required = false) String attender,
             @RequestParam(required = false) Long testbedId,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate
     ) {
         List<BDRREntry> entries = bdrrEntryService.getBDRREntriesByDynamicFilters(
                 status, raisedBy, attender, testbedId, startDate, endDate
@@ -72,8 +73,8 @@ public class BDRREntryController {
             @RequestParam(required = false) String raisedBy,
             @RequestParam(required = false) String attender,
             @RequestParam(required = false) Long testbedId,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate
     ) {
 
         List<BDRREntryProjection> entries = bdrrEntryService.getBDRREntriesByFilters(

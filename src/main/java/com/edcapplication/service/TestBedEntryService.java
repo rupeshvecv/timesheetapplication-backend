@@ -237,7 +237,7 @@ public class TestBedEntryService {
 		  + "</table>"
 
 		  // Footer message
-		  + "<p style='margin-top:20px; font-size:14px;'>Please log in to the <b>EDC System</b> for more information.</p>"
+		  + "<p style='margin-top:20px; font-size:14px;'>Please log in to the <b>http://srpth1envapp01.vecvnet.com:8080/EmpowerEdge/login EDC System</b> for more information.</p>"
 		  + "<p style='font-size:14px;'>Regards,<br><b>EDC Admin</b></p>"
 		  + "</div>"
 		  + "</body>"

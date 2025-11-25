@@ -1,13 +1,14 @@
 package com.edcapplication.projection;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 public interface BDRREntryProjection {
 
 	Long getId();
     String getBdrrNumber();
     String getStatus();
-    LocalDate getRaisedOn();
+    LocalDateTime getRaisedOn();
     String getRaisedBy();
     String getShift();
 
@@ -30,12 +31,12 @@ public interface BDRREntryProjection {
     String getSolutionRootCause();
     String getSolutionActionTaken();
     String getSolutionBy();
-    LocalDate getSolutionGivenOn();
+    LocalDateTime getSolutionGivenOn();
 
-    LocalDate getBdrrOfDate();
+    LocalDateTime getBdrrOfDate();
     String getAreaAttender();
-    LocalDate getTargetDate();
-    LocalDate getClosingDate();
+    LocalDateTime getTargetDate();
+    LocalDateTime getClosingDate();
 
     String getPartUsed();
     String getPartNumber();

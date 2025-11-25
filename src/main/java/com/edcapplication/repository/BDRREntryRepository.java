@@ -1,6 +1,7 @@
 package com.edcapplication.repository;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -16,16 +17,28 @@ import com.edcapplication.projection.BDRREntryProjection;
 public interface BDRREntryRepository extends JpaRepository<BDRREntry, Long>, JpaSpecificationExecutor<BDRREntry> {
 	@Query("SELECT MAX(b.id) FROM BDRREntry b")
 	Optional<Long> findMaxId();
+	
 	@Query("SELECT COUNT(e) FROM BDRREntry e WHERE e.raisedOn = :raisedOn")
-	Long countByRaisedOn(@Param("raisedOn") LocalDate raisedOn);
+	Long countByRaisedOn(@Param("raisedOn") LocalDateTime raisedOn);
+	
+	@Query("""
+		    SELECT COUNT(e)
+		    FROM BDRREntry e
+		    WHERE MONTH(e.raisedOn) = :month
+		      AND YEAR(e.raisedOn) = :year
+		""")
+		Long countByRaisedOnMonthYear(
+		        @Param("month") int month,
+		        @Param("year") int year
+		);
 	
 	List<BDRREntry> findByStatusAndRaisedByAndAttenderAndTestBed_IdAndRaisedOnBetween(
             String status,
             String raisedBy,
             String attender,
             Long testBedId,
-            LocalDate startDate,
-            LocalDate endDate
+            LocalDateTime startDate,
+            LocalDateTime endDate
     );
 	
 	@Query("""
@@ -143,8 +156,8 @@ public interface BDRREntryRepository extends JpaRepository<BDRREntry, Long>, Jpa
 	        @Param("raisedBy") String raisedBy,
 	        @Param("attender") String attender,
 	        @Param("testbedId") Long testbedId,
-	        @Param("startDate") LocalDate startDate,
-	        @Param("endDate") LocalDate endDate
+	        @Param("startDate") LocalDateTime startDate,
+	        @Param("endDate") LocalDateTime endDate
 	);
 
 }

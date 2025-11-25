@@ -1,5 +1,6 @@
 package com.edcapplication.service;
 
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -90,14 +91,17 @@ public class BDRREntryService {
         //String generatedBdrrNumber = "BDRR-" + (count + 1);
         //Long count = bdrrEntryRepository.findMaxId().orElse(0L);
         
-        LocalDate raisedOnDate = dao.getRaisedOn();
+        LocalDateTime raisedOnDate = dao.getRaisedOn();
 
         if (raisedOnDate == null) {
             throw new BadRequestException("RaisedOn date is required to generate BDRR number");
         }
 
         //Count entries for this date
-        Long count = bdrrEntryRepository.countByRaisedOn(raisedOnDate);
+        //Long count = bdrrEntryRepository.countByRaisedOn(raisedOnDate);
+        
+        Long count = bdrrEntryRepository.countByRaisedOnMonthYear(raisedOnDate.getMonthValue(),raisedOnDate.getYear()
+        );
         String generatedBdrrNumber = "BDRR-" + (count + 1);
 
         BDRREntry entry = new BDRREntry();
@@ -267,7 +271,7 @@ public class BDRREntryService {
     	    "</tbody>" +
     	    "</table>" +
 
-    	    "<p style='margin-top:20px;font-size:14px;'>Please log in to the <b>BDRR System</b> for full details and updates.</p>" +
+    	    "<p style='margin-top:20px;font-size:14px;'>Please log in to the <b>http://srpth1envapp01.vecvnet.com:8080/EmpowerEdge/login BDRR System</b> for full details and updates.</p>" +
     	    "<p style='font-size:14px;'>Regards,<br><b>EDC System</b></p>" +
     	    "</div>" +
     	    "</body>" +
@@ -305,13 +309,23 @@ public class BDRREntryService {
     {
 		String subject = "BDRR Closed - #" + entry.getBdrrNumber();
 
+		   // ----------------------------
+	    // TIME DIFFERENCE CALCULATION
+	    // ----------------------------
+	    LocalDateTime raisedDate = dao.getRaisedOn();
+	    LocalDateTime closedDate = dao.getClosingDate();
+
+	    long totalMinutes = Duration.between(raisedDate, closedDate).toMinutes();
+	    long hours = totalMinutes / 60;
+	    long minutes = totalMinutes % 60;
+	    
     	String htmlBody =
     	    "<html>" +
     	    "<body style='font-family: Calibri, Arial, sans-serif; background-color:#f9f9f9; color:#333; padding:20px;'>" +
     	    "<div style='max-width:1000px; margin:auto; background:#fff; border-radius:8px; " +
     	    "box-shadow:0 2px 8px rgba(0,0,0,0.1); padding:20px;'>" +
 
-    	    "<h2 style='color:#2E86C1; border-bottom:3px solid #2E86C1; padding-bottom:6px;'>New BDRR Entry Created</h2>" +
+    	    "<h2 style='color:#2E86C1; border-bottom:3px solid #2E86C1; padding-bottom:6px;'>New BDRR Entry Closed</h2>" +
 
     	    "<p style='font-size:15px;'><b style='color:#C0392B;'>Dear Team,</b><br>" +
     	    "A new <b>BDRR entry</b> has been created in the <b>EDC System</b>. Please find the details below:</p>" +
@@ -333,7 +347,9 @@ public class BDRREntryService {
     	    "<tr style='background-color:#f8f9fa;'><td><b>Problem</b></td><td>" + problem.getProblemName() + "</td></tr>" +
     	    "<tr><td><b>Raised By</b></td><td>" + dao.getRaisedBy() + "</td></tr>" +
     	    "<tr style='background-color:#f8f9fa;'><td><b>Shift</b></td><td>" + dao.getShift() + "</td></tr>" +
-    	    "<tr><td><b>Raised On</b></td><td>" + dao.getRaisedOn() + "</td></tr>" +
+    	    "<tr><td><b>Raised Date</b></td><td>" + dao.getRaisedOn() + "</td></tr>" +
+    	    "<tr><td><b>Closing Date</b></td><td>" + dao.getClosingDate() + "</td></tr>" +
+    	    "<tr><td><b>Time consumed in BDRR closure</b></td><td>" + hours +"HOURS -"+ minutes  + "MINUTES</td></tr>" +
     	    "<tr style='background-color:#f8f9fa;'><td><b>Breakdown Description</b></td><td>" + dao.getBreakDownDescription() + "</td></tr>" +
     	    "<tr><td><b>Initial Analysis</b></td><td>" + dao.getInitialAnalysis() + "</td></tr>" +
     	    "<tr><td><b>Work Done Description</b></td><td>" + dao.getWorkDoneDescription() + "</td></tr>" +
@@ -343,7 +359,7 @@ public class BDRREntryService {
     	    "</tbody>" +
     	    "</table>" +
 
-    	    "<p style='margin-top:20px;font-size:14px;'>Please log in to the <b>BDRR System</b> for full details and updates.</p>" +
+    	    "<p style='margin-top:20px;font-size:14px;'>Please log in to the <b>http://srpth1envapp01.vecvnet.com:8080/EmpowerEdge/login BDRR System</b> for full details and updates.</p>" +
     	    "<p style='font-size:14px;'>Regards,<br><b>EDC System</b></p>" +
     	    "</div>" +
     	    "</body>" +
@@ -371,7 +387,7 @@ public class BDRREntryService {
 	}
     
 	public List<BDRREntry> getBDRREntriesByDynamicFilters(String status, String raisedBy, String attender,
-			Long testBedId, LocalDate startDate, LocalDate endDate) {
+			Long testBedId, LocalDateTime startDate, LocalDateTime endDate) {
 
 		boolean allPresent = (status != null && !status.isEmpty()) && (raisedBy != null && !raisedBy.isEmpty())
 				&& (attender != null && !attender.isEmpty()) && (testBedId != null)
@@ -418,8 +434,8 @@ public class BDRREntryService {
 	        String raisedBy,
 	        String attender,
 	        Long testbedId,
-	        LocalDate startDate,
-	        LocalDate endDate
+	        LocalDateTime startDate,
+	        LocalDateTime endDate
 	) {
 	    return bdrrEntryRepository.findAllBDRREntryByFilters(
 	            status,
