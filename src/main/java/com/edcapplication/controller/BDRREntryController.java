@@ -58,11 +58,15 @@ public class BDRREntryController {
             @RequestParam(required = false) String raisedBy,
             @RequestParam(required = false) String attender,
             @RequestParam(required = false) Long testbedId,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate
     ) {
+    	//Convert LocalDate → LocalDateTime
+        LocalDateTime startDate1 = (startDate != null) ? startDate.atStartOfDay() : null;
+        LocalDateTime endDate1 = (endDate != null) ? endDate.atTime(23, 59, 59) : null;
+        
         List<BDRREntry> entries = bdrrEntryService.getBDRREntriesByDynamicFilters(
-                status, raisedBy, attender, testbedId, startDate, endDate
+                status, raisedBy, attender, testbedId, startDate1, endDate1
         );
         return ResponseEntity.ok(entries);
     }
@@ -73,17 +77,21 @@ public class BDRREntryController {
             @RequestParam(required = false) String raisedBy,
             @RequestParam(required = false) String attender,
             @RequestParam(required = false) Long testbedId,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate
     ) {
+    	
+    	//Convert LocalDate → LocalDateTime
+        LocalDateTime startDate1 = (startDate != null) ? startDate.atStartOfDay() : null;
+        LocalDateTime endDate1 = (endDate != null) ? endDate.atTime(23, 59, 59) : null;
 
         List<BDRREntryProjection> entries = bdrrEntryService.getBDRREntriesByFilters(
                 status,
                 raisedBy,
                 attender,
                 testbedId,
-                startDate,
-                endDate
+                startDate1,
+                endDate1
         );
 
         return ResponseEntity.ok(entries);
