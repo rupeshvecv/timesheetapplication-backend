@@ -262,7 +262,8 @@ public class BDRREntryService {
     	    "<tr style='background-color:#f8f9fa;'><td><b>BDRR No</b></td><td>" + entry.getBdrrNumber() + "</td></tr>" +
     	    "<tr><td><b>Status</b></td><td>" + dao.getStatus() + "</td></tr>" +
     	    "<tr style='background-color:#f8f9fa;'><td><b>Test Bed</b></td><td>" + testBed.getName() + "</td></tr>" +
-    	    "<tr><td><b>Equipment</b></td><td>" + equipment.getEquipmentName() + " - " + subEquipment.getSubequipmentName() + "</td></tr>" +
+    	    "<tr><td><b>Equipment</b></td><td>" + equipment.getEquipmentName() + "</td></tr>" +
+    	    "<tr><td><b>SubEquipment</b></td><td>" + subEquipment.getSubequipmentName() + "</td></tr>" +
     	    "<tr style='background-color:#f8f9fa;'><td><b>Problem</b></td><td>" + problem.getProblemName() + "</td></tr>" +
     	    "<tr><td><b>Raised By</b></td><td>" + dao.getRaisedBy() + "</td></tr>" +
     	    "<tr style='background-color:#f8f9fa;'><td><b>Shift</b></td><td>" + dao.getShift() + "</td></tr>" +
@@ -343,7 +344,8 @@ public class BDRREntryService {
     	    "<tr style='background-color:#f8f9fa;'><td><b>BDRR No</b></td><td>" + entry.getBdrrNumber() + "</td></tr>" +
     	    "<tr><td><b>Status</b></td><td>" + dao.getStatus() + "</td></tr>" +
     	    "<tr style='background-color:#f8f9fa;'><td><b>Test Bed</b></td><td>" + testBed.getName() + "</td></tr>" +
-    	    "<tr><td><b>Equipment</b></td><td>" + equipment.getEquipmentName() + " - " + subEquipment.getSubequipmentName() + "</td></tr>" +
+    	    "<tr><td><b>Equipment</b></td><td>" + equipment.getEquipmentName() + "</td></tr>" +
+    	    "<tr><td><b>SubEquipment</b></td><td>" + subEquipment.getSubequipmentName() + "</td></tr>" +
     	    "<tr style='background-color:#f8f9fa;'><td><b>Problem</b></td><td>" + problem.getProblemName() + "</td></tr>" +
     	    "<tr><td><b>Raised By</b></td><td>" + dao.getRaisedBy() + "</td></tr>" +
     	    "<tr style='background-color:#f8f9fa;'><td><b>Shift</b></td><td>" + dao.getShift() + "</td></tr>" +
