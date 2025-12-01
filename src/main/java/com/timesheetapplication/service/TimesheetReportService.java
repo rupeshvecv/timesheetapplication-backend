@@ -32,8 +32,13 @@ public class TimesheetReportService {
 		this.timesheetEntryRepository = timesheetEntryRepository;
 	}
 
-	public List<TimesheetFillingReportProjection> getTimesheetFilledUserReport(LocalDate startDate, LocalDate endDate) {
-		return timesheetEntryRepository.getTimesheetFilledUserReport(startDate, endDate);
+	public List<TimesheetFillingReportProjection> getTimesheetFilledUserReport(LocalDate startDate, LocalDate endDate,String username) {
+
+		if (username == null || username.isEmpty()) {
+			return timesheetEntryRepository.getTimesheetFilledUserReport(startDate, endDate);
+		} else {
+			return timesheetEntryRepository.getTimesheetFilledUserReportByUser(startDate, endDate, username);
+		}
 	}
 
 	public String getDepartmentByUser(String username) {
@@ -44,22 +49,24 @@ public class TimesheetReportService {
 		return userFeignClient.getEmpCodeByUsername(username);
 	}
 
-	public List<Map<String, Object>> generateDynamicPivot(LocalDate start, LocalDate end) {
+	public List<Map<String, Object>> generateDynamicPivot(LocalDate start, LocalDate end, String username, String project) {
 		List<String> projectNames = projectRepository.findAllActiveProjectNames();
-		List<Object[]> raw = timesheetEntryRepository.getUserProjectSummary(start, end);
+		//List<Object[]> raw = timesheetEntryRepository.getUserProjectSummary(start, end);
+		 List<Object[]> raw = timesheetEntryRepository.getUserProjectSummary(start, end, username, project);
+
 
 		Map<String, Map<String, Object>> pivot = new LinkedHashMap<>();
 
 		for (Object[] row : raw) {
 			String user = (String) row[0];
-			String project = (String) row[1];
+			String proj = (String) row[1];
 			Double hours = row[2] instanceof Double ? (Double) row[2] : ((Number) row[2]).doubleValue();
 
 			pivot.putIfAbsent(user, new LinkedHashMap<>());
 			Map<String, Object> uRow = pivot.get(user);
 
 			uRow.put("UserName", user);
-			uRow.put(project, hours);
+			uRow.put(proj, hours);
 			uRow.put("Total", ((Double) uRow.getOrDefault("Total", 0.0)) + hours);
 		}
 
@@ -80,8 +87,8 @@ public class TimesheetReportService {
 
 		for (UserSummaryDTO user : allUsers) {
 			Map<String, Object> row = new LinkedHashMap<>();
-			//row.put("UserName", user.userName());
-			row.put("UserName", user.firstName()+" "+user.lastName());
+			// row.put("UserName", user.userName());
+			row.put("UserName", user.firstName() + " " + user.lastName());
 			row.put("EmpCode", user.empCode());
 			row.put("Designation", user.designationName());
 			row.put("Department", user.departmentName());

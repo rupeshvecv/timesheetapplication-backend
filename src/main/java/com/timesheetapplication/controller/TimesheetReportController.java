@@ -50,26 +50,28 @@ public class TimesheetReportController {
     @GetMapping("/timesheetFilledUser")
     public ResponseEntity<List<TimesheetFillingReportProjection>> getTimesheetFilledUserReport(
             @RequestParam LocalDate startDate,
-            @RequestParam LocalDate endDate) {
+            @RequestParam LocalDate endDate,
+            @RequestParam(required = false) String userName) {
 
-        List<TimesheetFillingReportProjection> report =
-                timesheetReportService.getTimesheetFilledUserReport(startDate, endDate);
+        List<TimesheetFillingReportProjection> reportData =
+                timesheetReportService.getTimesheetFilledUserReport(startDate, endDate, userName);
 
-        if (report.isEmpty()) {
+        if (reportData.isEmpty()) {
             return ResponseEntity.noContent().build();
         }
 
-        return ResponseEntity.ok(report);
+        return ResponseEntity.ok(reportData);
     }
 
     //Excel Export
     @GetMapping("/timesheetFilledUserExcel")
     public ResponseEntity<InputStreamResource> exportReportToFilledUserExcel(
             @RequestParam LocalDate startDate,
-            @RequestParam LocalDate endDate) throws IOException {
+            @RequestParam LocalDate endDate,
+            @RequestParam(required = false) String userName) throws IOException {
 
         List<TimesheetFillingReportProjection> report =
-                timesheetReportService.getTimesheetFilledUserReport(startDate, endDate);
+                timesheetReportService.getTimesheetFilledUserReport(startDate, endDate, userName);
 
         ByteArrayInputStream excelFile = excelGenerator.exportReportToFilledUserExcel(report);
 
@@ -85,22 +87,31 @@ public class TimesheetReportController {
     @GetMapping("/timesheetUserProject")
     public ResponseEntity<List<Map<String, Object>>> getTimesheetUserProject(
             @RequestParam LocalDate startDate,
-            @RequestParam LocalDate endDate) {
+            @RequestParam LocalDate endDate,
+            @RequestParam(required = false) String userName,
+            @RequestParam(required = false) String projectName) {
 
-        List<Map<String, Object>> reportData = timesheetReportService.generateDynamicPivot(startDate, endDate);
+        List<Map<String, Object>> reportData = timesheetReportService.generateDynamicPivot(startDate, endDate, userName, projectName);
+
+        if (reportData.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
         return ResponseEntity.ok(reportData);
     }
 
     @GetMapping("/timesheetUserProjectExcel")
     public ResponseEntity<InputStreamResource> exportReportToUserProjectExcel(
             @RequestParam LocalDate startDate,
-            @RequestParam LocalDate endDate) throws IOException {
+            @RequestParam LocalDate endDate,
+            @RequestParam(required = false) String userName,
+            @RequestParam(required = false) String projectName) throws IOException {
 
         //List<Map<String, Object>> reportData = timesheetReportService.generateDynamicPivot(startDate, endDate);
         
         List<UserSummaryDTO> allUsers = userFeignClient.getAllOptimizedUsers();
         List<String> projectNames = projectRepository.findAllActiveProjectNames();
-        List<Object[]> raw = timesheetEntryRepository.getUserProjectSummary(startDate, endDate);
+        //List<Object[]> raw = timesheetEntryRepository.getUserProjectSummary(startDate, endDate);
+        List<Object[]> raw = timesheetEntryRepository.getUserProjectSummary(startDate, endDate, userName, projectName);
 
         List<Map<String, Object>> finalReportData = timesheetReportService.buildUserProjectPivot(allUsers, raw, projectNames);
 
