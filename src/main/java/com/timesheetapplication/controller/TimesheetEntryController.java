@@ -1,0 +1,100 @@
+package com.timesheetapplication.controller;
+
+import java.time.LocalDate;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.timesheetapplication.dto.MapperUtil;
+import com.timesheetapplication.dto.TimesheetEntryDto;
+import com.timesheetapplication.model.TimesheetEntry;
+import com.timesheetapplication.projection.TimesheetEntryProjection;
+import com.timesheetapplication.service.TimesheetEntryService;
+
+import lombok.RequiredArgsConstructor;
+
+@RestController
+@RequestMapping("/api/timesheetapplication")
+@RequiredArgsConstructor
+public class TimesheetEntryController {
+
+	@Autowired
+	private TimesheetEntryService timesheetEntryService;
+
+	/*@GetMapping("/timesheetEntry")
+	public ResponseEntity<List<TimesheetEntryDto>> getAll() {
+		List<TimesheetEntry> entries = timesheetEntryService.getAll();
+
+		List<TimesheetEntryDto> result = entries.stream().map(MapperUtil::toDto).collect(Collectors.toList());
+		return ResponseEntity.ok(result);
+	}*/
+
+	@GetMapping("/timesheetEntry")
+	public ResponseEntity<List<TimesheetEntryProjection>> getAllOptimizedTimesheetEntries() {
+	    List<TimesheetEntryProjection> result = timesheetEntryService.getAllTimesheetEntries();
+
+	    if (result.isEmpty()) {
+	        return ResponseEntity.noContent().build();
+	    }
+
+	    return ResponseEntity.ok(result);
+	}
+	/*@GetMapping("/timesheetEntry/fromto")
+	public List<TimesheetEntryDto> query(@RequestParam String user,
+			@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
+			@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to) {
+		return timesheetEntryService.findForUserBetween(user, from, to).stream().map(MapperUtil::toDto).toList();
+	}*/
+	
+	@GetMapping("/timesheetEntry/fromto")
+	public ResponseEntity<List<TimesheetEntryProjection>> getAllDatewiseOptimized(
+	        @RequestParam String user,
+	        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
+	        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to) {
+
+	    List<TimesheetEntryProjection> result = timesheetEntryService.findForUserBetween(user, from, to);
+
+	    if (result.isEmpty()) {
+	        return ResponseEntity.noContent().build();
+	    }
+
+	    return ResponseEntity.ok(result);
+	}
+
+	@GetMapping("/timesheetEntry/{id}")
+	public ResponseEntity<TimesheetEntryDto> getById(@PathVariable Long id) {
+		TimesheetEntry entry = timesheetEntryService.getById(id);
+		return ResponseEntity.ok(MapperUtil.toDto(entry));
+	}
+
+	@PostMapping(("/timesheetEntry"))
+	public ResponseEntity<TimesheetEntryDto> createTimesheetEntry(@RequestBody TimesheetEntryDto dto) {
+		TimesheetEntry saved = timesheetEntryService.createTimesheetEntry(dto);
+		return ResponseEntity.ok(MapperUtil.toDto(saved));
+	}
+
+	@PutMapping("/timesheetEntry/{id}")
+	public ResponseEntity<TimesheetEntryDto> updateTimesheetEntry(@PathVariable Long id, @RequestBody TimesheetEntryDto dto) {
+		dto.setId(id); // ensure correct ID is used
+		TimesheetEntry updated = timesheetEntryService.updateTimesheetEntry(dto);
+		return ResponseEntity.ok(MapperUtil.toDto(updated));
+	}
+
+	@DeleteMapping("/timesheetEntry/{id}")
+	public ResponseEntity<String> deleteTimesheetEntry(@PathVariable Long id) {
+		timesheetEntryService.deleteTimesheetEntry(id);
+		return ResponseEntity.ok("Timesheet entry deleted successfully.");
+	}
+}

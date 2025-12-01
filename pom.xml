@@ -5,12 +5,12 @@
 
 	<modelVersion>4.0.0</modelVersion>
 
-	<groupId>com.edcapplication</groupId>
-	<artifactId>edcapplication</artifactId>
+	<groupId>com.timesheetapplication</groupId>
+	<artifactId>timesheetapplication</artifactId>
 	<version>SANPSHOT-1.0.0</version>
 	<packaging>jar</packaging>
-	<name>edcapplication</name>
-	<description>This model have edcapplication role rights</description>
+	<name>timesheetapplication</name>
+	<description>This model have timesheetapplication role rights</description>
 
 	<parent>
 		<groupId>org.springframework.boot</groupId>
@@ -112,7 +112,7 @@
 	        <artifactId>spring-cloud-starter-openfeign</artifactId>
 	    </dependency>
     
-		<dependency>
+			<dependency>
 			<groupId>io.jsonwebtoken</groupId>
 			<artifactId>jjwt-api</artifactId>
 			<version>0.11.5</version>
@@ -130,6 +130,17 @@
 			<scope>runtime</scope>
 		</dependency>
 
+		<dependency>
+		  <groupId>org.apache.poi</groupId>
+		  <artifactId>poi-ooxml</artifactId>
+		  <version>5.2.5</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.empoweredge</groupId>
+			<artifactId>empoweredge</artifactId>
+			<version>SANPSHOT-1.0.0</version>
+		</dependency>
 	</dependencies>
 
 	<build>
