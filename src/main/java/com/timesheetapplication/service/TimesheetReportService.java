@@ -32,8 +32,12 @@ public class TimesheetReportService {
 		this.timesheetEntryRepository = timesheetEntryRepository;
 	}
 
-	public List<TimesheetFillingReportProjection> getTimesheetFilledUserReport(LocalDate startDate, LocalDate endDate) {
-		return timesheetEntryRepository.getTimesheetFilledUserReport(startDate, endDate);
+	public List<TimesheetFillingReportProjection> getTimesheetFilledUserReport(LocalDate startDate, LocalDate endDate, String username) {
+		if (username == null || username.isEmpty()) {
+	        return timesheetEntryRepository.getTimesheetFilledUserReport(startDate, endDate);
+	    } else {
+	        return timesheetEntryRepository.getTimesheetFilledUserReportByUser(startDate, endDate, username);
+	    }
 	}
 
 	public String getDepartmentByUser(String username) {
@@ -44,9 +48,9 @@ public class TimesheetReportService {
 		return userFeignClient.getEmpCodeByUsername(username);
 	}
 
-	public List<Map<String, Object>> generateDynamicPivot(LocalDate start, LocalDate end) {
+	public List<Map<String, Object>> generateDynamicPivot(LocalDate start, LocalDate end, String userName, String projectName) {
 		List<String> projectNames = projectRepository.findAllActiveProjectNames();
-		List<Object[]> raw = timesheetEntryRepository.getUserProjectSummary(start, end);
+		List<Object[]> raw = timesheetEntryRepository.getUserProjectSummary(start, end, userName, projectName);
 
 		Map<String, Map<String, Object>> pivot = new LinkedHashMap<>();
 
@@ -80,8 +84,8 @@ public class TimesheetReportService {
 
 		for (UserSummaryDTO user : allUsers) {
 			Map<String, Object> row = new LinkedHashMap<>();
-			//row.put("UserName", user.userName());
-			row.put("UserName", user.firstName()+" "+user.lastName());
+			// row.put("UserName", user.userName());
+			row.put("UserName", user.firstName() + " " + user.lastName());
 			row.put("EmpCode", user.empCode());
 			row.put("Designation", user.designationName());
 			row.put("Department", user.departmentName());
@@ -107,6 +111,53 @@ public class TimesheetReportService {
 		}
 
 		return new ArrayList<>(userRows.values()); // sorted by username
+	}
+
+	public List<Map<String, Object>> buildUserProjectPivotFilter(List<UserSummaryDTO> allUsers, List<Object[]> rawData,
+			List<String> projectNames) {
+
+		Map<String, Map<String, Object>> userRows = new TreeMap<>(); // sorted ascending
+
+		//Create rows only for users who exist in rawData
+		for (Object[] record : rawData) {
+			String username = (String) record[0];
+
+			//find matching user details only for users present in rawData
+			UserSummaryDTO matchedUser = allUsers.stream().filter(u -> u.userName().equals(username)).findFirst()
+					.orElse(null);
+
+			if (matchedUser != null && !userRows.containsKey(username)) {
+				Map<String, Object> row = new LinkedHashMap<>();
+
+				row.put("UserName", matchedUser.firstName() + " " + matchedUser.lastName());
+				row.put("EmpCode", matchedUser.empCode());
+				row.put("Designation", matchedUser.designationName());
+				row.put("Department", matchedUser.departmentName());
+				row.put("Status", matchedUser.statusName());
+
+				for (String project : projectNames) {
+					row.put(project, 0.0);
+				}
+				row.put("Total", 0.0);
+
+				userRows.put(username, row);
+			}
+		}
+
+		//Fill hours data now
+		for (Object[] record : rawData) {
+			String username = (String) record[0];
+			String projectName = (String) record[1];
+			Double hours = ((Number) record[2]).doubleValue();
+
+			Map<String, Object> row = userRows.get(username);
+			if (row != null) {
+				row.put(projectName, hours);
+				row.put("Total", ((Double) row.get("Total")) + hours);
+			}
+		}
+
+		return new ArrayList<>(userRows.values());
 	}
 
 }

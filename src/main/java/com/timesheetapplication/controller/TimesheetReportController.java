@@ -3,6 +3,7 @@ package com.timesheetapplication.controller;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -50,10 +51,11 @@ public class TimesheetReportController {
     @GetMapping("/timesheetFilledUser")
     public ResponseEntity<List<TimesheetFillingReportProjection>> getTimesheetFilledUserReport(
             @RequestParam LocalDate startDate,
-            @RequestParam LocalDate endDate) {
+            @RequestParam LocalDate endDate,
+            @RequestParam(required = false) String username) {
 
         List<TimesheetFillingReportProjection> report =
-                timesheetReportService.getTimesheetFilledUserReport(startDate, endDate);
+                timesheetReportService.getTimesheetFilledUserReport(startDate, endDate, username);
 
         if (report.isEmpty()) {
             return ResponseEntity.noContent().build();
@@ -66,10 +68,11 @@ public class TimesheetReportController {
     @GetMapping("/timesheetFilledUserExcel")
     public ResponseEntity<InputStreamResource> exportReportToFilledUserExcel(
             @RequestParam LocalDate startDate,
-            @RequestParam LocalDate endDate) throws IOException {
+            @RequestParam LocalDate endDate,
+            @RequestParam(required = false) String username) throws IOException {
 
         List<TimesheetFillingReportProjection> report =
-                timesheetReportService.getTimesheetFilledUserReport(startDate, endDate);
+                timesheetReportService.getTimesheetFilledUserReport(startDate, endDate, username);
 
         ByteArrayInputStream excelFile = excelGenerator.exportReportToFilledUserExcel(report);
 
@@ -85,24 +88,36 @@ public class TimesheetReportController {
     @GetMapping("/timesheetUserProject")
     public ResponseEntity<List<Map<String, Object>>> getTimesheetUserProject(
             @RequestParam LocalDate startDate,
-            @RequestParam LocalDate endDate) {
+            @RequestParam LocalDate endDate,
+            @RequestParam(required = false) String userName,
+            @RequestParam(required = false) String projectName) {
 
-        List<Map<String, Object>> reportData = timesheetReportService.generateDynamicPivot(startDate, endDate);
+        List<Map<String, Object>> reportData = timesheetReportService.generateDynamicPivot(startDate, endDate, userName, projectName);
         return ResponseEntity.ok(reportData);
     }
 
     @GetMapping("/timesheetUserProjectExcel")
     public ResponseEntity<InputStreamResource> exportReportToUserProjectExcel(
             @RequestParam LocalDate startDate,
-            @RequestParam LocalDate endDate) throws IOException {
+            @RequestParam LocalDate endDate,
+            @RequestParam(required = false) String userName,
+            @RequestParam(required = false) String projectName) throws IOException {
 
         //List<Map<String, Object>> reportData = timesheetReportService.generateDynamicPivot(startDate, endDate);
         
         List<UserSummaryDTO> allUsers = userFeignClient.getAllOptimizedUsers();
         List<String> projectNames = projectRepository.findAllActiveProjectNames();
-        List<Object[]> raw = timesheetEntryRepository.getUserProjectSummary(startDate, endDate);
+        List<Object[]> raw = timesheetEntryRepository.getUserProjectSummary(startDate, endDate, userName, projectName);
 
-        List<Map<String, Object>> finalReportData = timesheetReportService.buildUserProjectPivot(allUsers, raw, projectNames);
+        List<Map<String, Object>> finalReportData = new ArrayList<>();
+        
+        //List<Map<String, Object>> finalReportData = timesheetReportService.buildUserProjectPivot(allUsers, raw, projectNames);
+        if ((userName == null || userName.isEmpty())&&(projectName == null || projectName.isEmpty())) {
+        	 finalReportData = timesheetReportService.buildUserProjectPivot(allUsers, raw, projectNames);
+        }
+        else {
+        	finalReportData = timesheetReportService.buildUserProjectPivotFilter(allUsers, raw, projectNames);
+        }
 
         ByteArrayInputStream excelFile = excelGenerator.exportReportToUserProjectExcel(finalReportData, projectNames);
 

@@ -116,16 +116,47 @@ public interface TimesheetEntryRepository extends JpaRepository<TimesheetEntry, 
 	    """, nativeQuery = true)
 	 List<TimesheetFillingReportProjection> getTimesheetFilledUserReport(LocalDate startDate, LocalDate endDate);
 
+	 @Query(value = """
+			    WITH RECURSIVE date_range AS (
+			        SELECT DATE_ADD(:startDate, INTERVAL seq DAY) AS dt
+			        FROM timesheetapplication.seq_0_to_10000
+			        WHERE DATE_ADD(:startDate, INTERVAL seq DAY) <= :endDate
+			    ),
+			    working_days AS (
+			        SELECT dt
+			        FROM date_range
+			        WHERE DAYOFWEEK(dt) NOT IN (1, 7)   -- Exclude Sunday (1) & Saturday (7)
+			        AND dt NOT IN (SELECT holiday_date FROM timesheetapplication.holiday_master)
+			    )
+			    SELECT
+			        t.user_name AS userName,
+			        COUNT(DISTINCT t.entry_date) AS filledDays,
+			        (SELECT COUNT(*) FROM working_days) AS totalDays,
+			        (COUNT(DISTINCT t.entry_date) * 100.0 / (SELECT COUNT(*) FROM working_days)) AS percentageFilled
+			    FROM timesheetapplication.timesheet_entry t
+			    WHERE t.entry_date IN (SELECT dt FROM working_days) -- <=== Important Fix
+			      AND t.entry_date BETWEEN :startDate AND :endDate
+			      AND (:userName IS NULL OR :userName = '' OR t.user_name = :userName)
+			    GROUP BY t.user_name
+			    ORDER BY filledDays DESC
+			    """, nativeQuery = true)
+			List<TimesheetFillingReportProjection> getTimesheetFilledUserReportByUser(
+			        @Param("startDate") LocalDate startDate,
+			        @Param("endDate") LocalDate endDate,
+			        @Param("userName") String userName
+			);
+
 	 @Query(
 			    value = "SELECT t.user_name AS userName, p.project_name AS projectName, SUM(t.hours) AS hours " +
 			            "FROM timesheetapplication.timesheet_entry t " +
 			            "JOIN project p ON p.id = t.project_id " +
 			            "WHERE t.entry_date BETWEEN :startDate AND :endDate " +
 			            "AND DAYOFWEEK(t.entry_date) NOT IN (1, 7) " +
+			            "AND (:userName IS NULL OR :userName = '' OR t.user_name = :userName) " +
+					    "AND (:projectName IS NULL OR :projectName = '' OR p.project_name = :projectName) " +
 			            "GROUP BY t.user_name, p.project_name " +
 			            "ORDER BY t.user_name",
 			    nativeQuery = true
 			)
-	 List<Object[]> getUserProjectSummary(@Param("startDate") LocalDate startDate, @Param("endDate") LocalDate endDate);
-	 
+	 List<Object[]> getUserProjectSummary(@Param("startDate") LocalDate startDate, @Param("endDate") LocalDate endDate,@Param("userName") String userName,@Param("projectName") String projectName);
 }
