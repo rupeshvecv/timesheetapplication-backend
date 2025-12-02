@@ -3,6 +3,7 @@ package com.timesheetapplication.controller;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -107,13 +108,25 @@ public class TimesheetReportController {
             @RequestParam(required = false) String projectName) throws IOException {
 
         //List<Map<String, Object>> reportData = timesheetReportService.generateDynamicPivot(startDate, endDate);
+    	
+    	List<Map<String, Object>> finalReportData = new ArrayList<>();
         
         List<UserSummaryDTO> allUsers = userFeignClient.getAllOptimizedUsers();
         List<String> projectNames = projectRepository.findAllActiveProjectNames();
         //List<Object[]> raw = timesheetEntryRepository.getUserProjectSummary(startDate, endDate);
         List<Object[]> raw = timesheetEntryRepository.getUserProjectSummary(startDate, endDate, userName, projectName);
 
-        List<Map<String, Object>> finalReportData = timesheetReportService.buildUserProjectPivot(allUsers, raw, projectNames);
+      //List<Map<String, Object>> finalReportData = timesheetReportService.buildUserProjectPivot(allUsers, raw, projectNames);
+        System.out.println("TimesheetReportController.exportReportToUserProjectExcel(userName) "+userName);
+        System.out.println("TimesheetReportController.exportReportToUserProjectExcel(projectName) "+projectName);
+        if ((userName == null || userName.isEmpty()) && (projectName == null || projectName.isEmpty())) {
+        	System.out.println("TimesheetReportController.exportReportToUserProjectExcel(IF) ");
+        	finalReportData = timesheetReportService.buildUserProjectPivot(allUsers, raw, projectNames);
+        }
+        else {
+        	System.out.println("TimesheetReportController.exportReportToUserProjectExcel(ELSE) ");
+        	finalReportData = timesheetReportService.buildUserProjectPivotFilter(allUsers, raw, projectNames);
+        }
 
         ByteArrayInputStream excelFile = excelGenerator.exportReportToUserProjectExcel(finalReportData, projectNames);
 
