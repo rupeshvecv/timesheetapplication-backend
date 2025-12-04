@@ -71,10 +71,22 @@ public class TimesheetUserService {
             throw e;
         }
     }
+    
     public List<UserSummaryDTO> fetchAllOptimizedUsers() {
         try {
             List<UserSummaryDTO> users = userServiceFeignClient.getAllOptimizedUsers();
-            System.out.println("✅ TestBed Users Successfully fetched " + users.size() + " users from EmpowerEdge");
+            System.out.println("✅ All Optimized Users Successfully fetched " + users.size() + " users from EmpowerEdge");
+            return users;
+        } catch (Exception e) {
+            System.err.println("❌ Error while calling EmpowerEdge API: " + e.getMessage());
+            throw e;
+        }
+    }
+    
+    public List<UserSummaryDTO> fetchAllOptimizedPDDUsers() {
+        try {
+            List<UserSummaryDTO> users = userServiceFeignClient.getAllOptimizedPDDUsers();
+            System.out.println("✅ AllOptimized PDD Users Successfully fetched " + users.size() + " users from EmpowerEdge");
             return users;
         } catch (Exception e) {
             System.err.println("❌ Error while calling EmpowerEdge API: " + e.getMessage());
