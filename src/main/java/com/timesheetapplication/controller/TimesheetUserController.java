@@ -67,4 +67,9 @@ public class TimesheetUserController {
         return timesheetUserService.fetchAllOptimizedUsers();
     }
     
+    @GetMapping("/allpddusers")
+    public List<UserSummaryDTO> getAllOptimizedPDDUsers(){
+        return timesheetUserService.fetchAllOptimizedPDDUsers();
+    }
+    
 }

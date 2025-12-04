@@ -31,4 +31,7 @@ public interface UserServiceFeignClient {
     
     @GetMapping("/api/empoweredge/allusers")
     List<UserSummaryDTO> getAllOptimizedUsers();
+    
+    @GetMapping("/api/empoweredge/allpddusers")
+    List<UserSummaryDTO> getAllOptimizedPDDUsers();
 }

@@ -27,6 +27,7 @@ public record UserSummaryDTO(
         String superiorName,
         String hrbpName,
         String departmentName,
+        String departmentDescription,
         String designationName,
         String locationName,
 
