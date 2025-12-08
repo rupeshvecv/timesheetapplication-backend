@@ -11,6 +11,7 @@ import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
 import com.timesheetapplication.client.UserServiceFeignClient;
@@ -35,31 +36,22 @@ public class TimesheetMISScheduler {
 
 	@Scheduled(cron = "0 30 15 * * *")
 	//@Scheduled(cron = "0 30 09 * * MON")//every Monday 9:30 AM
-	public void sendWeeklyFridayTimesheetMis() 
+	public void sendDailyNonEntryNotification() 
 	{
-		LocalDate today = LocalDate.now();
-		LocalDate startDate = today.with(DayOfWeek.MONDAY);
-		LocalDate endDate = today.with(DayOfWeek.FRIDAY);
+		LocalDate startDate = LocalDate.now();
+		LocalDate endDate = LocalDate.now();
 
-		System.out.println("📅 Generating Weekly MIS sendWeeklyFridayTimesheetMis from " + startDate + " to " + endDate);
+		System.out.println("📅 Generating Daily NonEntryNotification sendDailyNonEntryNotification from " + startDate + " to " + endDate);
 
-		// Convert LocalDate → LocalDateTime
-		// LocalDateTime startDateTime = startDate.atStartOfDay();
-		// LocalDateTime endDateTime = endDate.atTime(23, 59, 59);
+		//Fetch all users
+		 String currentUser 				= getLoggedInUsername();// <--- FROM JWT
 
-		System.out.println("📅 Generating Weekly MIS startDate from " + startDate + " to endDate " + endDate);
-
-		// Fetch all users
-		List<UserSummaryDTO> allPDDUsers = userServiceFeignClient.getAllOptimizedPDDUsers();
-		System.out.println(
-				"sendWeeklyTimesheetMis(allPDDUsers.SIZE) " + allPDDUsers.size() + " :Total PDD users: " + allPDDUsers);
-
-		if (allPDDUsers == null || allPDDUsers.isEmpty()) {
+		if (currentUser == null || currentUser.isEmpty()) {
 			System.out.println("⚠️ No users found!");
 			return;
 		}
 
-		// Iterate user -> subordinate -> timesheet
+		//Iterate user -> subordinate -> timesheet
 		for (UserSummaryDTO manager : allPDDUsers) {
 			// Fetch subordinate users for given manager
 			List<UserSummaryDTO> subordinates = userServiceFeignClient.getSubordinateUsers(manager.userName());
@@ -107,33 +99,24 @@ public class TimesheetMISScheduler {
 
 			try {
 				mailService.sendMailHTMLFile("idmadmin@VECV.IN", to, subject, htmlBody, attachments, bcc);
-				System.out.println("✅ Weekly MIS Mail sent successfully!");
+				System.out.println("✅ Non Entry Notification for Timesheet mail sent successfully!");
 			} catch (Exception e) {
 				System.err.println("❌ Error sending Weekly MIS Mail: " + e.getMessage());
 			}
 		}
-
 	}
 	
-	@Scheduled(cron = "0 33 16 * * *")
+	@Scheduled(cron = "0 30 15 * * *")
 	//@Scheduled(cron = "0 30 09 * * MON")//every Monday 9:30 AM
-	public void sendWeeklyTimesheetMis() 
+	public void sendWeeklyFridayTimesheetMis() 
 	{
 		LocalDate today = LocalDate.now();
-		LocalDate startDate = today.minusWeeks(1).with(DayOfWeek.MONDAY);
-		// LocalDate endDate = startDate.plusDays(6); // Sunday
-		// LocalDate endDate = startDate.plusDays(5); // Saturday
-		LocalDate endDate = startDate.plusDays(4); // friday
+		LocalDate startDate = today.with(DayOfWeek.MONDAY);
+		LocalDate endDate = today.with(DayOfWeek.FRIDAY);
 
-		System.out.println("📅 Generating Weekly MIS sendWeeklyTimesheetMis from " + startDate + " to " + endDate);
+		System.out.println("📅 Generating Weekly MIS sendWeeklyFridayTimesheetMis from " + startDate + " to " + endDate);
 
-		// Convert LocalDate → LocalDateTime
-		// LocalDateTime startDateTime = startDate.atStartOfDay();
-		// LocalDateTime endDateTime = endDate.atTime(23, 59, 59);
-
-		System.out.println("📅 Generating Weekly MIS startDate from " + startDate + " to endDate " + endDate);
-
-		// Fetch all users
+		//Fetch all users
 		List<UserSummaryDTO> allPDDUsers = userServiceFeignClient.getAllOptimizedPDDUsers();
 		System.out.println(
 				"sendWeeklyTimesheetMis(allPDDUsers.SIZE) " + allPDDUsers.size() + " :Total PDD users: " + allPDDUsers);
@@ -143,9 +126,9 @@ public class TimesheetMISScheduler {
 			return;
 		}
 
-		// Iterate user -> subordinate -> timesheet
+		//Iterate user -> subordinate -> timesheet
 		for (UserSummaryDTO manager : allPDDUsers) {
-			// Fetch subordinate users for given manager
+			//Fetch subordinate users for given manager
 			List<UserSummaryDTO> subordinates = userServiceFeignClient.getSubordinateUsers(manager.userName());
 			System.out.println("Subordinates for Manager " + manager.userName() + ": " + subordinates.size());
 
@@ -154,7 +137,7 @@ public class TimesheetMISScheduler {
 				continue;
 			}
 
-			// Map<EmployeeName, Map<Date, Status>>
+			//Map<EmployeeName, Map<Date, Status>>
 			Map<String, Map<LocalDate, String>> weeklyData = new LinkedHashMap<>();
 
 			for (UserSummaryDTO subordinate : subordinates) {
@@ -173,8 +156,80 @@ public class TimesheetMISScheduler {
 				weeklyData.put(subordinate.firstName() + " " + subordinate.lastName(), statusMap);
 			}
 
-			// String htmlBody = buildWeeklyHtmlMail(startDate, endDate,
-			// weeklyData,manager.userName());
+			String htmlBody = buildDailyNonEntryHtmlMail();
+			String subject = "Weekly Timesheet Report (" + startDate + " - " + endDate + ")";
+			String[] attachments = { "C:/reports/dailyNonEntry.xlsx" };
+			System.out.println("📧 htmlBody: " + htmlBody);
+
+			//Recipients (can be from DB/config)
+			String[] to = { "rkraghuvanshi@vecv.in", "askushwah2@VECV.IN" };
+
+			//BCC recipients
+			String[] bcc = new String[] { "rkraghuvanshi@vecv.in", "askushwah2@VECV.IN" };
+
+			try {
+				mailService.sendMailHTMLFile("idmadmin@VECV.IN", to, subject, htmlBody, attachments, bcc);
+				System.out.println("✅ Daily Non Entry Mail sent successfully!");
+			} catch (Exception e) {
+				System.err.println("❌ Error sending Weekly MIS Mail: " + e.getMessage());
+			}
+		}
+	}
+	
+	@Scheduled(cron = "0 33 16 * * *")
+	//@Scheduled(cron = "0 30 09 * * MON")//every Monday 9:30 AM
+	public void sendWeeklyTimesheetMis() 
+	{
+		LocalDate today = LocalDate.now();
+		LocalDate startDate = today.minusWeeks(1).with(DayOfWeek.MONDAY);
+		// LocalDate endDate = startDate.plusDays(6); // Sunday
+		// LocalDate endDate = startDate.plusDays(5); // Saturday
+		LocalDate endDate = startDate.plusDays(4); // friday
+
+		System.out.println("📅 Generating Weekly MIS sendWeeklyTimesheetMis from " + startDate + " to " + endDate);
+
+		//Fetch all users
+		List<UserSummaryDTO> allPDDUsers = userServiceFeignClient.getAllOptimizedPDDUsers();
+		System.out.println(
+				"sendWeeklyTimesheetMis(allPDDUsers.SIZE) " + allPDDUsers.size() + " :Total PDD users: " + allPDDUsers);
+
+		if (allPDDUsers == null || allPDDUsers.isEmpty()) {
+			System.out.println("⚠️ No users found!");
+			return;
+		}
+
+		//Iterate user -> subordinate -> timesheet
+		for (UserSummaryDTO manager : allPDDUsers) {
+			//Fetch subordinate users for given manager
+			List<UserSummaryDTO> subordinates = userServiceFeignClient.getSubordinateUsers(manager.userName());
+			System.out.println("Subordinates for Manager " + manager.userName() + ": " + subordinates.size());
+
+			if (subordinates.isEmpty()) {
+				System.out.println("⚠️ No subordinates under Manager " + manager.userName());
+				continue;
+			}
+
+			//Map<EmployeeName, Map<Date, Status>>
+			Map<String, Map<LocalDate, String>> weeklyData = new LinkedHashMap<>();
+
+			for (UserSummaryDTO subordinate : subordinates) {
+
+				Map<LocalDate, String> statusMap = new LinkedHashMap<>();
+				LocalDate day = startDate;
+
+				while (!day.isAfter(endDate)) {
+					List<TimesheetEntryProjection> dayEntries = timesheetEntryService
+							.findForUserBetween(subordinate.userName(), day, day);
+
+					statusMap.put(day, dayEntries.isEmpty() ? "Not Filled" : "Filled");
+					day = day.plusDays(1);
+				}
+
+				weeklyData.put(subordinate.firstName() + " " + subordinate.lastName(), statusMap);
+			}
+
+			//String htmlBody = buildWeeklyHtmlMail(startDate, endDate,
+			//weeklyData,manager.userName());
 			String htmlBody = buildWeeklyHtmlMail(startDate, endDate, weeklyData,
 					manager.firstName() + " " + manager.lastName());
 			String subject = "Weekly Timesheet Report (" + startDate + " - " + endDate + ")";
@@ -183,10 +238,10 @@ public class TimesheetMISScheduler {
 			System.out.println("📧 Weekly Timesheet MIS Mail sent to Manager: " + manager.firstName());
 			System.out.println("📧 htmlBody: " + htmlBody);
 
-			// Recipients (can be from DB/config)
+			//Recipients (can be from DB/config)
 			String[] to = { "rkraghuvanshi@vecv.in", "askushwah2@VECV.IN" };
 
-			// BCC recipients
+			//BCC recipients
 			String[] bcc = new String[] { "rkraghuvanshi@vecv.in", "askushwah2@VECV.IN" };
 
 			try {
@@ -252,58 +307,39 @@ public class TimesheetMISScheduler {
 		return html.toString();
 	}
 
-	/*
-	 * private String buildWeeklyHtmlMail(LocalDate startDate, LocalDate endDate,
-	 * List<WeeklyTimesheetDTO> submittedList, List<WeeklyTimesheetDTO>
-	 * notSubmittedList) {
-	 * 
-	 * StringBuilder html = new StringBuilder();
-	 * 
-	 * html.append("<html><body style='font-family: Arial, sans-serif;'>");
-	 * 
-	 * html.append("<h3 style='color:#333;'>Weekly Timesheet Status Report (").
-	 * append(startDate).append(" - ") .append(endDate).append(")</h3>");
-	 * 
-	 * html.append(
-	 * "<p>Dear Sir/Madam,<br><br>Please find below the weekly timesheet entry status for your reportees:</p>"
-	 * );
-	 * 
-	 * html.append(
-	 * "<table border='1' cellpadding='6' cellspacing='0' style='border-collapse: collapse; width:100%;'>"
-	 * );
-	 * 
-	 * //Table Header
-	 * html.append("<tr style='background-color:#f2f2f2; font-weight:bold;'>").
-	 * append("<th>Employee Name</th>")
-	 * .append("<th>Username</th>").append("<th>Department</th>").append(
-	 * "<th>Manager</th>") .append("<th>Status</th>").append("</tr>");
-	 * 
-	 * //Submitted entries (GREEN) for (WeeklyTimesheetDTO dto : submittedList) {
-	 * html.append("<tr>").append("<td>").append(dto.employeeName()).append("</td>")
-	 * .append("<td>")
-	 * .append(dto.userName()).append("</td>").append("<td>").append(dto.
-	 * departmentName()).append("</td>")
-	 * .append("<td>").append(dto.managerName()).append("</td>")
-	 * .append("<td style='color:green; font-weight:bold;'>").append(dto.status()).
-	 * append("</td>") .append("</tr>"); }
-	 * 
-	 * //Not Submitted entries (RED) for (WeeklyTimesheetDTO dto : notSubmittedList)
-	 * {
-	 * html.append("<tr>").append("<td>").append(dto.employeeName()).append("</td>")
-	 * .append("<td>")
-	 * .append(dto.userName()).append("</td>").append("<td>").append(dto.
-	 * departmentName()).append("</td>")
-	 * .append("<td>").append(dto.managerName()).append("</td>")
-	 * .append("<td style='color:red; font-weight:bold;'>").append(dto.status()).
-	 * append("</td>") .append("</tr>"); }
-	 * 
-	 * html.append("</table><br>");
-	 * 
-	 * html.append("<p>Regards,<br><b>Timesheet Automation System</b></p>");
-	 * html.append("</body></html>");
-	 * 
-	 * return html.toString(); }
-	 */
+	private String buildDailyNonEntryHtmlMail() 
+	{
+		StringBuilder html = new StringBuilder();
+		html.append("<html>");
+		html.append("<body style='font-family:Arial, sans-serif;'>");
+
+		//Title
+		html.append("<h2 style='color:#2E86C1; border-bottom:3px solid #2E86C1; padding-bottom:6px;'>📌 Daily Timesheet Reminder</h2>");
+
+		//Message content
+		html.append("<p style='font-size:15px;'><b style='color:#2E86C1;'>Dear All,</b></p>");
+		html.append("<p style='font-size:14px; line-height:1.6;'>Please fill your time sheet.<br>");
+		html.append("If you have already filled, please ignore this mail.</p>");
+
+		//Button Link
+		html.append("<p style='margin-top:15px; margin-bottom:15px;'>");
+		html.append("<a href='https://sss.sss.net/Timesheet' ");
+		html.append("style='background-color:#2E86C1; color:white; padding:10px 18px; text-decoration:none; ");
+		html.append("border-radius:6px; font-weight:bold;'>");
+		html.append("➤ Open Timesheet</a></p>");
+
+		//Regards section
+		html.append("<p style='font-size:14px;'>Regards,<br><b>Timesheet Admin</b></p>");
+
+		//Optional footer
+		html.append("<hr style='border:0; border-top:1px solid #ccc; margin-top:25px;'>");
+		html.append("<p style='font-size:12px; color:#888;'>This is an automated system generated message. Please do not reply.</p>");
+
+		html.append("</body>");
+		html.append("</html>");
+
+		return html.toString();
+	}
 
 	private String[] extractEmailsFromUsers(List<UserDTO> users) {
 		if (users == null || users.isEmpty()) {
@@ -327,4 +363,13 @@ public class TimesheetMISScheduler {
 	private String safe(Object value) {
 		return value == null ? "" : value.toString();
 	}
+	
+	 private String getLoggedInUsername() 
+	 {
+        if (SecurityContextHolder.getContext().getAuthentication() == null) {
+            return "SYSTEM"; // fallback
+        }
+        return SecurityContextHolder.getContext().getAuthentication().getName();
+    }
+	 
 }
