@@ -1,5 +1,6 @@
 package com.timesheetapplication.repository;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -11,8 +12,17 @@ import com.timesheetapplication.projection.TimesheetEntryProjection;
 import com.timesheetapplication.projection.TimesheetFillingReportProjection;
 
 public interface TimesheetEntryRepository extends JpaRepository<TimesheetEntry, Long> {
+	
+	@Query("SELECT COALESCE(SUM(t.hours), 0) FROM TimesheetEntry t " +
+	           "WHERE t.userName = :user AND t.entryDate = :date")
+    BigDecimal getTotalHoursForUserAndDate(@Param("user") String user,
+                                           @Param("date") LocalDate date);
+	
+	boolean existsByEntryDateAndUserName(LocalDate date, String userName);
+	
+	List<TimesheetEntry> findByUserNameAndEntryDate(String user, LocalDate date);
+	
 	List<TimesheetEntry> findByUserNameAndEntryDateBetween(String userName, LocalDate from, LocalDate to);
-	 boolean existsByEntryDateAndUserName(LocalDate entryDate, String userName);
 
 	 @Query("""
      SELECT 

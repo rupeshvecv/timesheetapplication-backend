@@ -3,6 +3,7 @@ package com.timesheetapplication.model;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -12,14 +13,15 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-import jakarta.persistence.UniqueConstraint;
 
 @Entity
+@Table(name = "timesheet_entry", schema = "timesheetapplication")
+/*
 @Table(name = "timesheet_entry",schema = "timesheetapplication",
 	    uniqueConstraints = {
 	        @UniqueConstraint(columnNames = {"entry_date", "user_name"})
 	    }
-	)
+	)*/
 public class TimesheetEntry {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -29,7 +31,7 @@ public class TimesheetEntry {
 	private LocalDate entryDate;
 	
     @Column(name = "time")
-    private String time;
+    private LocalTime time;
 
 	@Column(nullable = false)
 	private BigDecimal hours;
@@ -63,7 +65,7 @@ public class TimesheetEntry {
 		super();
 	}
 
-	public TimesheetEntry(Long id, LocalDate entryDate, String time, BigDecimal hours, String userName, Category category,
+	public TimesheetEntry(Long id, LocalDate entryDate, LocalTime time, BigDecimal hours, String userName, Category category,
 			Platform platform, Project project, Activity activity, String details, LocalDateTime raisedOn) {
 		super();
 		this.id = id;
@@ -87,20 +89,20 @@ public class TimesheetEntry {
 		this.id = id;
 	}
 
-	public String getTime() {
-		return time;
-	}
-
-	public void setTime(String time) {
-		this.time = time;
-	}
-
 	public LocalDate getEntryDate() {
 		return entryDate;
 	}
 
 	public void setEntryDate(LocalDate entryDate) {
 		this.entryDate = entryDate;
+	}
+
+	public LocalTime getTime() {
+		return time;
+	}
+
+	public void setTime(LocalTime time) {
+		this.time = time;
 	}
 
 	public BigDecimal getHours() {
@@ -169,9 +171,9 @@ public class TimesheetEntry {
 
 	@Override
 	public String toString() {
-		return "TimesheetEntry [id=" + id + ", entryDate=" + entryDate + ", hours=" + hours + ", userName=" + userName
-				+ ", category=" + category + ", platform=" + platform + ", project=" + project + ", activity="
-				+ activity + ", details=" + details + ", raisedOn=" + raisedOn + "]";
+		return "TimesheetEntry [id=" + id + ", entryDate=" + entryDate + ", time=" + time + ", hours=" + hours
+				+ ", userName=" + userName + ", category=" + category + ", platform=" + platform + ", project="
+				+ project + ", activity=" + activity + ", details=" + details + ", raisedOn=" + raisedOn + "]";
 	}
 
 }

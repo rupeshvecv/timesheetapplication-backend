@@ -34,7 +34,7 @@ public class TimesheetMISScheduler {
 	@Autowired
 	private TimesheetEntryService timesheetEntryService;
 
-	@Scheduled(cron = "0 30 15 * * *")
+	@Scheduled(cron = "0 9 12 * * *")
 	//@Scheduled(cron = "0 30 09 * * MON")//every Monday 9:30 AM
 	public void sendDailyNonEntryNotification() 
 	{
@@ -44,51 +44,23 @@ public class TimesheetMISScheduler {
 		System.out.println("📅 Generating Daily NonEntryNotification sendDailyNonEntryNotification from " + startDate + " to " + endDate);
 
 		//Fetch all users
-		 String currentUser 				= getLoggedInUsername();// <--- FROM JWT
+		List<UserSummaryDTO> allPDDUsers 		= userServiceFeignClient.getAllOptimizedPDDUsers();
+		System.out.println("sendWeeklyTimesheetMis(allPDDUsers.SIZE) " + allPDDUsers.size() + " :Total PDD users: " + allPDDUsers);
 
-		if (currentUser == null || currentUser.isEmpty()) {
-			System.out.println("⚠️ No users found!");
-			return;
-		}
+   	    String[] toAllPDDRecipients			= extractEmailsFromSummaryUsers(allPDDUsers);
+   	    System.out.println("TimesheetMISScheduler.sendDailyNonEntryNotification( toAllPDDRecipients.SIZE) "+toAllPDDRecipients.length);
+   	    System.out.println("TimesheetMISScheduler.sendDailyNonEntryNotification( toAllPDDRecipients) "+toAllPDDRecipients);
+	    
+	   	if (toAllPDDRecipients.length == 0) {
+	   	    System.out.println("⚠️ No PDD recipients to send mail!");
+	   	    return;
+	   	}
 
-		//Iterate user -> subordinate -> timesheet
-		for (UserSummaryDTO manager : allPDDUsers) {
-			// Fetch subordinate users for given manager
-			List<UserSummaryDTO> subordinates = userServiceFeignClient.getSubordinateUsers(manager.userName());
-			System.out.println("Subordinates for Manager " + manager.userName() + ": " + subordinates.size());
+			String htmlBody = buildDailyNonEntryHtmlMail();
+			
+			String subject = "Notification for Daily NonEntry ";
+			String[] attachments = { "C:/reports/dailyNonEntry.xlsx" };
 
-			if (subordinates.isEmpty()) {
-				System.out.println("⚠️ No subordinates under Manager " + manager.userName());
-				continue;
-			}
-
-			// Map<EmployeeName, Map<Date, Status>>
-			Map<String, Map<LocalDate, String>> weeklyData = new LinkedHashMap<>();
-
-			for (UserSummaryDTO subordinate : subordinates) {
-
-				Map<LocalDate, String> statusMap = new LinkedHashMap<>();
-				LocalDate day = startDate;
-
-				while (!day.isAfter(endDate)) {
-					List<TimesheetEntryProjection> dayEntries = timesheetEntryService
-							.findForUserBetween(subordinate.userName(), day, day);
-
-					statusMap.put(day, dayEntries.isEmpty() ? "Not Filled" : "Filled");
-					day = day.plusDays(1);
-				}
-
-				weeklyData.put(subordinate.firstName() + " " + subordinate.lastName(), statusMap);
-			}
-
-			// String htmlBody = buildWeeklyHtmlMail(startDate, endDate,
-			// weeklyData,manager.userName());
-			String htmlBody = buildWeeklyHtmlMail(startDate, endDate, weeklyData,
-					manager.firstName() + " " + manager.lastName());
-			String subject = "Weekly Timesheet Report (" + startDate + " - " + endDate + ")";
-			String[] attachments = { "C:/reports/weekly-BDRR-report.xlsx" };
-
-			System.out.println("📧 Weekly Timesheet MIS Mail sent to Manager: " + manager.firstName());
 			System.out.println("📧 htmlBody: " + htmlBody);
 
 			// Recipients (can be from DB/config)
@@ -104,9 +76,8 @@ public class TimesheetMISScheduler {
 				System.err.println("❌ Error sending Weekly MIS Mail: " + e.getMessage());
 			}
 		}
-	}
 	
-	@Scheduled(cron = "0 30 15 * * *")
+	@Scheduled(cron = "0 11 12 * * *")
 	//@Scheduled(cron = "0 30 09 * * MON")//every Monday 9:30 AM
 	public void sendWeeklyFridayTimesheetMis() 
 	{
@@ -156,9 +127,10 @@ public class TimesheetMISScheduler {
 				weeklyData.put(subordinate.firstName() + " " + subordinate.lastName(), statusMap);
 			}
 
-			String htmlBody = buildDailyNonEntryHtmlMail();
+			String htmlBody = buildWeeklyHtmlMail(startDate, endDate, weeklyData,
+					manager.firstName() + " " + manager.lastName());
 			String subject = "Weekly Timesheet Report (" + startDate + " - " + endDate + ")";
-			String[] attachments = { "C:/reports/dailyNonEntry.xlsx" };
+			String[] attachments = { "C:/reports/WeeklyEntry.xlsx" };
 			System.out.println("📧 htmlBody: " + htmlBody);
 
 			//Recipients (can be from DB/config)
@@ -176,7 +148,7 @@ public class TimesheetMISScheduler {
 		}
 	}
 	
-	@Scheduled(cron = "0 33 16 * * *")
+	@Scheduled(cron = "0 12 12 * * *")
 	//@Scheduled(cron = "0 30 09 * * MON")//every Monday 9:30 AM
 	public void sendWeeklyTimesheetMis() 
 	{
@@ -233,7 +205,7 @@ public class TimesheetMISScheduler {
 			String htmlBody = buildWeeklyHtmlMail(startDate, endDate, weeklyData,
 					manager.firstName() + " " + manager.lastName());
 			String subject = "Weekly Timesheet Report (" + startDate + " - " + endDate + ")";
-			String[] attachments = { "C:/reports/weekly-BDRR-report.xlsx" };
+			String[] attachments = { "C:/reports/weekly-report.xlsx" };
 
 			System.out.println("📧 Weekly Timesheet MIS Mail sent to Manager: " + manager.firstName());
 			System.out.println("📧 htmlBody: " + htmlBody);
@@ -372,4 +344,22 @@ public class TimesheetMISScheduler {
         return SecurityContextHolder.getContext().getAuthentication().getName();
     }
 	 
+	 private String[] extractEmailsFromSummaryUsers(List<UserSummaryDTO> users) {
+			if (users == null || users.isEmpty()) {
+				System.out.println("⚠️ No users provided to extract emails!");
+				return new String[0];
+			}
+
+			List<String> emailList = users.stream().map(UserSummaryDTO::email)
+					.filter(email -> email != null && !email.isEmpty()).toList();
+
+			if (emailList.isEmpty()) {
+				System.out.println("⚠️ No valid email IDs found in user list!");
+				return new String[0];
+			}
+
+			String[] emailArray = emailList.toArray(new String[0]);
+			System.out.println("✅ Extracted email array: " + Arrays.toString(emailArray));
+			return emailArray;
+		}
 }

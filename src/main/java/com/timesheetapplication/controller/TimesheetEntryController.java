@@ -79,17 +79,14 @@ public class TimesheetEntryController {
 		return ResponseEntity.ok(MapperUtil.toDto(entry));
 	}
 
-	@PostMapping(("/timesheetEntry"))
-	public ResponseEntity<TimesheetEntryDto> createTimesheetEntry(@RequestBody TimesheetEntryDto dto) {
-		TimesheetEntry saved = timesheetEntryService.createTimesheetEntry(dto);
-		return ResponseEntity.ok(MapperUtil.toDto(saved));
-	}
+	@PostMapping("/timesheetEntry/saveAll")
+    public ResponseEntity<?> saveAllTimesheetEntry(@RequestBody TimesheetEntryDto dto) {
+        return ResponseEntity.ok(timesheetEntryService.saveAllTimesheetEntry(dto));
+    }
 
-	@PutMapping("/timesheetEntry/{id}")
-	public ResponseEntity<TimesheetEntryDto> updateTimesheetEntry(@PathVariable Long id, @RequestBody TimesheetEntryDto dto) {
-		dto.setId(id); // ensure correct ID is used
-		TimesheetEntry updated = timesheetEntryService.updateTimesheetEntry(dto);
-		return ResponseEntity.ok(MapperUtil.toDto(updated));
+	@PutMapping("/updateAll")
+	public ResponseEntity<?> updateMultipleEntries(@RequestBody List<TimesheetEntryDto> entries) {
+	    return ResponseEntity.ok(timesheetEntryService.updateAllTimesheetEntry(entries));
 	}
 
 	@DeleteMapping("/timesheetEntry/{id}")
