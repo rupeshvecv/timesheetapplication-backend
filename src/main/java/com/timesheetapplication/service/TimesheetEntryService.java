@@ -1,6 +1,5 @@
 package com.timesheetapplication.service;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -10,10 +9,10 @@ import java.util.List;
 import java.util.Locale;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.timesheetapplication.dto.MapperUtil;
 import com.timesheetapplication.dto.TimesheetEntryDto;
 import com.timesheetapplication.dto.TimesheetRowDto;
 import com.timesheetapplication.model.Activity;
@@ -21,11 +20,13 @@ import com.timesheetapplication.model.Category;
 import com.timesheetapplication.model.Platform;
 import com.timesheetapplication.model.Project;
 import com.timesheetapplication.model.TimesheetEntry;
+import com.timesheetapplication.model.TimesheetEntryAudit;
 import com.timesheetapplication.projection.TimesheetEntryProjection;
 import com.timesheetapplication.repository.ActivityRepository;
 import com.timesheetapplication.repository.CategoryRepository;
 import com.timesheetapplication.repository.PlatformRepository;
 import com.timesheetapplication.repository.ProjectRepository;
+import com.timesheetapplication.repository.TimesheetEntryAuditHistoryRepository;
 import com.timesheetapplication.repository.TimesheetEntryRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -49,6 +50,9 @@ public class TimesheetEntryService {
 	@Autowired
 	private ActivityRepository activityRepository;
 
+	@Autowired
+    private TimesheetEntryAuditHistoryRepository timesheetEntryAuditHistoryRepository;
+	
 	public TimesheetEntry getById(Long id) {
 		return timesheetEntryRepository.findById(id)
 				.orElseThrow(() -> new IllegalArgumentException("Timesheet not found: " + id));
@@ -71,7 +75,7 @@ public class TimesheetEntryService {
     }
 
     @Transactional
-    public List<TimesheetEntry> saveAllTimesheetEntry(TimesheetEntryDto dto) {
+    public List<TimesheetEntry> saveAllTimesheetEntry(TimesheetEntryDto dto) throws Exception {
         //prevent duplicate date entries
         if (timesheetEntryRepository.existsByEntryDateAndUserName(dto.getEntryDate(), dto.getUserName())) {
             throw new IllegalArgumentException("Timesheet entries already exist for this date.");
@@ -111,7 +115,9 @@ public class TimesheetEntryService {
 
             savedList.add(timesheetEntryRepository.save(entry));
         }
-
+        //Audit history snapshot BEFORE updating
+        String historyVal = "UserName-> "+dto.getUserName()+" :savedList: "+savedList;
+        saveTimesheetAudit(dto.getUserName(),historyVal,"Create");
         return savedList;
     }
 
@@ -294,5 +300,22 @@ public class TimesheetEntryService {
 		}
 		timesheetEntryRepository.deleteById(id);
 	}
+	
+	 private void saveTimesheetAudit(String userName,String historyVal,String operationType) throws Exception {
+		 TimesheetEntryAudit auditRecord = new TimesheetEntryAudit();
+	        String currentUser 				= getLoggedInUsername();// <--- FROM JWT
+	        auditRecord.setUserName(userName);
+	        auditRecord.setFieldValues(historyVal);
+	        auditRecord.setOperationType(operationType);
+	        auditRecord.setChangedBy(currentUser);  // <--- store JWT USERNAME
+	        auditRecord.setChangedOn(LocalDateTime.now());
 
+	        timesheetEntryAuditHistoryRepository.save(auditRecord);
+	    }
+	 private String getLoggedInUsername() {
+	        if (SecurityContextHolder.getContext().getAuthentication() == null) {
+	            return "SYSTEM"; // fallback
+	        }
+	        return SecurityContextHolder.getContext().getAuthentication().getName();
+	    }
 }

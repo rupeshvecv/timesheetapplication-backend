@@ -80,7 +80,7 @@ public class TimesheetEntryController {
 	}
 
 	@PostMapping("/timesheetEntry/saveAll")
-    public ResponseEntity<?> saveAllTimesheetEntry(@RequestBody TimesheetEntryDto dto) {
+    public ResponseEntity<?> saveAllTimesheetEntry(@RequestBody TimesheetEntryDto dto) throws Exception {
         return ResponseEntity.ok(timesheetEntryService.saveAllTimesheetEntry(dto));
     }
 
