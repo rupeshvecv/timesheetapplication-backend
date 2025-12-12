@@ -2,7 +2,6 @@ package com.timesheetapplication.controller;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -41,9 +40,11 @@ public class TimesheetEntryController {
 		return ResponseEntity.ok(result);
 	}*/
 
-	@GetMapping("/timesheetEntry")
-	public ResponseEntity<List<TimesheetEntryProjection>> getAllOptimizedTimesheetEntries() {
-	    List<TimesheetEntryProjection> result = timesheetEntryService.getAllTimesheetEntries();
+	@GetMapping("/timesheetEntry/allTimesheetEntries")
+	public ResponseEntity<List<TimesheetEntryProjection>> getAllOptimizedTimesheetEntries(
+			@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startEntryDate,
+	        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endEntryDate) {
+	    List<TimesheetEntryProjection> result = timesheetEntryService.getAllOptimizedTimesheetEntries(startEntryDate, endEntryDate);
 
 	    if (result.isEmpty()) {
 	        return ResponseEntity.noContent().build();
@@ -51,6 +52,7 @@ public class TimesheetEntryController {
 
 	    return ResponseEntity.ok(result);
 	}
+	
 	/*@GetMapping("/timesheetEntry/fromto")
 	public List<TimesheetEntryDto> query(@RequestParam String user,
 			@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
@@ -58,13 +60,13 @@ public class TimesheetEntryController {
 		return timesheetEntryService.findForUserBetween(user, from, to).stream().map(MapperUtil::toDto).toList();
 	}*/
 	
-	@GetMapping("/timesheetEntry/fromto")
-	public ResponseEntity<List<TimesheetEntryProjection>> getAllDatewiseOptimized(
+	@GetMapping("/timesheetEntry/allDateUserWiseTimesheetEntries")
+	public ResponseEntity<List<TimesheetEntryProjection>> getAllDateUserWiseOptimizedTimesheetEntries(
 	        @RequestParam String user,
-	        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
-	        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to) {
+	        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startEntryDate,
+	        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endEntryDate) {
 
-	    List<TimesheetEntryProjection> result = timesheetEntryService.findForUserBetween(user, from, to);
+	    List<TimesheetEntryProjection> result = timesheetEntryService.getAllDateUserWiseOptimizedTimesheetEntries(user, startEntryDate, endEntryDate);
 
 	    if (result.isEmpty()) {
 	        return ResponseEntity.noContent().build();

@@ -62,16 +62,16 @@ public class TimesheetEntryService {
 		return timesheetEntryRepository.findAll();
 	}*/
 	
-	public List<TimesheetEntryProjection> getAllTimesheetEntries() {
-        return timesheetEntryRepository.findAllTimesheetEntries();
+	public List<TimesheetEntryProjection> getAllOptimizedTimesheetEntries(LocalDate startEntryDate, LocalDate endEntryDate) {
+        return timesheetEntryRepository.findAllOptimizedTimesheetEntries(startEntryDate,endEntryDate);
     }
 	
 	/*public List<TimesheetEntry> findForUserBetween(String user, LocalDate from, LocalDate to) {
 		return timesheetEntryRepository.findByUserNameAndEntryDateBetween(user, from, to);
 	}*/
 	
-	public List<TimesheetEntryProjection> findForUserBetween(String user, LocalDate from, LocalDate to) {
-        return timesheetEntryRepository.findForUserBetween(user, from, to);
+	public List<TimesheetEntryProjection> getAllDateUserWiseOptimizedTimesheetEntries(String user, LocalDate startEntryDate, LocalDate endEntryDate) {
+        return timesheetEntryRepository.findAllDateUserWiseOptimizedTimesheetEntries(user, startEntryDate, endEntryDate);
     }
 
     @Transactional

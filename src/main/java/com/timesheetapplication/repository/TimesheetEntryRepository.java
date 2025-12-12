@@ -52,12 +52,12 @@ public interface TimesheetEntryRepository extends JpaRepository<TimesheetEntry, 
     LEFT JOIN t.project pr
     LEFT JOIN t.activity a
     WHERE t.userName = :user
-      AND t.entryDate BETWEEN :from AND :to
+      AND t.entryDate BETWEEN :startEntryDate AND :endEntryDate
     ORDER BY t.entryDate ASC
     """)
-   List<TimesheetEntryProjection> findForUserBetween(@Param("user") String user,
-                                                  @Param("from") LocalDate from,
-                                                  @Param("to") LocalDate to);
+   List<TimesheetEntryProjection> findAllDateUserWiseOptimizedTimesheetEntries(@Param("user") String user,
+                                                  @Param("startEntryDate") LocalDate startEntryDate,
+                                                  @Param("endEntryDate") LocalDate endEntryDate);
 	 
 	 @Query("""
 	    SELECT 
@@ -86,10 +86,10 @@ public interface TimesheetEntryRepository extends JpaRepository<TimesheetEntry, 
 	    LEFT JOIN t.platform p
 	    LEFT JOIN t.project pr
 	    LEFT JOIN t.activity a
-	    ORDER BY t.entryDate DESC
-	    """)
-	 List<TimesheetEntryProjection> findAllTimesheetEntries();
-	 
+	   WHERE t.entryDate BETWEEN :startEntryDate AND :endEntryDate
+    ORDER BY t.entryDate ASC
+    """)
+	 List<TimesheetEntryProjection> findAllOptimizedTimesheetEntries(@Param("startEntryDate") LocalDate startEntryDate,@Param("endEntryDate") LocalDate endEntryDate);
 		/*
 		 * @Query(value = """ SELECT t.user_name AS userName, COUNT(t.entry_date) AS
 		 * filledDays, (DATEDIFF(:endDate, :startDate) + 1) AS totalDays,

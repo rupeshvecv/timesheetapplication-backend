@@ -2,8 +2,6 @@ package com.timesheetapplication.scheduler;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -17,7 +15,6 @@ import org.springframework.stereotype.Component;
 import com.timesheetapplication.client.UserServiceFeignClient;
 import com.timesheetapplication.dto.UserDTO;
 import com.timesheetapplication.dto.UserSummaryDTO;
-import com.timesheetapplication.dto.WeeklyTimesheetDTO;
 import com.timesheetapplication.projection.TimesheetEntryProjection;
 import com.timesheetapplication.service.MailService;
 import com.timesheetapplication.service.TimesheetEntryService;
@@ -118,7 +115,7 @@ public class TimesheetMISScheduler {
 
 				while (!day.isAfter(endDate)) {
 					List<TimesheetEntryProjection> dayEntries = timesheetEntryService
-							.findForUserBetween(subordinate.userName(), day, day);
+							.getAllDateUserWiseOptimizedTimesheetEntries(subordinate.userName(), day, day);
 
 					statusMap.put(day, dayEntries.isEmpty() ? "Not Filled" : "Filled");
 					day = day.plusDays(1);
@@ -191,7 +188,7 @@ public class TimesheetMISScheduler {
 
 				while (!day.isAfter(endDate)) {
 					List<TimesheetEntryProjection> dayEntries = timesheetEntryService
-							.findForUserBetween(subordinate.userName(), day, day);
+							.getAllDateUserWiseOptimizedTimesheetEntries(subordinate.userName(), day, day);
 
 					statusMap.put(day, dayEntries.isEmpty() ? "Not Filled" : "Filled");
 					day = day.plusDays(1);
