@@ -4,8 +4,10 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.timesheetapplication.model.TimesheetEntry;
 import com.timesheetapplication.projection.TimesheetEntryProjection;
@@ -15,8 +17,12 @@ public interface TimesheetEntryRepository extends JpaRepository<TimesheetEntry, 
 	
 	@Query("SELECT COALESCE(SUM(t.hours), 0) FROM TimesheetEntry t " +
 	           "WHERE t.userName = :user AND t.entryDate = :date")
-    BigDecimal getTotalHoursForUserAndDate(@Param("user") String user,
-                                           @Param("date") LocalDate date);
+    BigDecimal getTotalHoursForUserAndDate(@Param("user") String user,@Param("date") LocalDate date);
+	
+	@Transactional
+	@Modifying
+	@Query("DELETE FROM TimesheetEntry t WHERE t.entryDate = :entryDate AND t.userName = :user")
+	int deleteByEntryDateAndUserName(@Param("entryDate") LocalDate entryDate,@Param("user") String userName);
 	
 	boolean existsByEntryDateAndUserName(LocalDate date, String userName);
 	

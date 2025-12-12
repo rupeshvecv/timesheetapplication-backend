@@ -91,9 +91,11 @@ public class TimesheetEntryController {
 	    return ResponseEntity.ok(timesheetEntryService.updateAllTimesheetEntry(entries));
 	}
 
-	@DeleteMapping("/timesheetEntry/{id}")
-	public ResponseEntity<String> deleteTimesheetEntry(@PathVariable Long id) {
-		timesheetEntryService.deleteTimesheetEntry(id);
-		return ResponseEntity.ok("Timesheet entry deleted successfully.");
+	@DeleteMapping("/timesheetEntry")
+	public ResponseEntity<String> deleteTimesheetEntry(
+		@RequestParam String user,
+		@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate entryDate) {
+	    timesheetEntryService.deleteTimesheetEntry(entryDate, user);
+	    return ResponseEntity.ok("Timesheet entry deleted successfully.");
 	}
 }

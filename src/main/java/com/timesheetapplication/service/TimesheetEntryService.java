@@ -294,12 +294,13 @@ public class TimesheetEntryService {
 		return timesheetEntryRepository.save(existing);
 	}*/
 
-	public void deleteTimesheetEntry(Long id) {
-		if (!timesheetEntryRepository.existsById(id)) {
-			throw new IllegalArgumentException("Timesheet not found: " + id);
-		}
-		timesheetEntryRepository.deleteById(id);
-	}
+    public void deleteTimesheetEntry(LocalDate entryDate, String user) {
+        int count = timesheetEntryRepository.deleteByEntryDateAndUserName(entryDate, user);
+        if (count == 0) {
+            throw new IllegalArgumentException("No timesheet entry found for date "
+                    + entryDate + " and user " + user);
+        }
+    }
 	
 	 private void saveTimesheetAudit(String userName,String historyVal,String operationType) throws Exception {
 		 TimesheetEntryAudit auditRecord = new TimesheetEntryAudit();
