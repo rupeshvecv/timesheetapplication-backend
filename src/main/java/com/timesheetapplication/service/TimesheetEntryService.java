@@ -1,5 +1,6 @@
 package com.timesheetapplication.service;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -339,7 +340,8 @@ public class TimesheetEntryService {
 
             entry.setTime(LocalTime.now());
             
-            entry.setHours(row.getHours());
+            //entry.setHours(row.getHours());
+            entry.setHours(BigDecimal.valueOf(9));
             entry.setDetails(row.getDetails());
             entry.setRaisedOn(LocalDateTime.now());
 
