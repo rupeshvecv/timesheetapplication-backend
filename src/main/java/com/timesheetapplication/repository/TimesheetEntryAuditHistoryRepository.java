@@ -14,7 +14,8 @@ public interface TimesheetEntryAuditHistoryRepository extends JpaRepository<Time
 
     @Query("SELECT t FROM TimesheetEntryAudit t " +
            "WHERE t.userName = :userName " +
-           "AND t.changedOn BETWEEN :fromDate AND :toDate " +
+           "AND t.changedOn >= :fromDate " +
+           "AND t.changedOn <= :toDate " +
            "ORDER BY t.changedOn DESC")
     List<TimesheetEntryAudit> findAuditHistoryTimesheetEntries(
             @Param("userName") String userName,
