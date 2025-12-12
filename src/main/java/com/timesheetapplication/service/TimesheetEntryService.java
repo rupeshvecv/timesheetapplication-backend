@@ -313,10 +313,55 @@ public class TimesheetEntryService {
 
 	        timesheetEntryAuditHistoryRepository.save(auditRecord);
 	    }
-	 private String getLoggedInUsername() {
-	        if (SecurityContextHolder.getContext().getAuthentication() == null) {
-	            return "SYSTEM"; // fallback
-	        }
-	        return SecurityContextHolder.getContext().getAuthentication().getName();
-	    }
+	 private String getLoggedInUsername() 
+	 {
+        if (SecurityContextHolder.getContext().getAuthentication() == null) {
+            return "SYSTEM"; // fallback
+        }
+        return SecurityContextHolder.getContext().getAuthentication().getName();
+	 }
+	 
+	 @Transactional
+    public List<TimesheetEntry> saveLeaveTimesheetEntry(TimesheetEntryDto dto) throws Exception {
+        //prevent duplicate date entries
+        if (timesheetEntryRepository.existsByEntryDateAndUserName(dto.getEntryDate(), dto.getUserName())) {
+            throw new IllegalArgumentException("Timesheet entries already exist for this date.");
+        }
+
+        List<TimesheetEntry> savedList = new ArrayList<>();
+
+        for (TimesheetRowDto row : dto.getRows()) {
+
+            TimesheetEntry entry = new TimesheetEntry();
+
+            entry.setEntryDate(dto.getEntryDate());
+            entry.setUserName(dto.getUserName());
+
+            entry.setTime(LocalTime.now());
+            
+            entry.setHours(row.getHours());
+            entry.setDetails(row.getDetails());
+            entry.setRaisedOn(LocalDateTime.now());
+
+            Category category = categoryRepository.findById(row.getCategoryId())
+                    .orElseThrow(() -> new IllegalArgumentException("Category not found"));
+            
+            Platform platform = platformRepository.findById(row.getPlatformId())
+                    .orElseThrow(() -> new IllegalArgumentException("Platform not found"));
+            
+            Project project = projectRepository.findById(row.getProjectId())
+                    .orElseThrow(() -> new IllegalArgumentException("Project not found"));
+            
+            Activity activity = activityRepository.findById(row.getActivityId())
+                    .orElseThrow(() -> new IllegalArgumentException("Activity not found"));
+
+            entry.setCategory(category);
+            entry.setPlatform(platform);
+            entry.setProject(project);
+            entry.setActivity(activity);
+
+            savedList.add(timesheetEntryRepository.save(entry));
+        }
+        return savedList;
+    }
 }
