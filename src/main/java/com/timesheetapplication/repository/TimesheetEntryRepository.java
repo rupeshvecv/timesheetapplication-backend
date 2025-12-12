@@ -28,7 +28,7 @@ public interface TimesheetEntryRepository extends JpaRepository<TimesheetEntry, 
      SELECT 
         t.id AS id,
         t.entryDate AS entryDate,
-        t.time AS time,
+        FUNCTION('TIME_FORMAT', t.time, '%H:%i:%s') AS time,
         t.hours AS hours,
         t.userName AS userName,
 
@@ -63,7 +63,8 @@ public interface TimesheetEntryRepository extends JpaRepository<TimesheetEntry, 
 	    SELECT 
 	        t.id AS id,
 	        t.entryDate AS entryDate,
-	        t.time AS time,
+	         /* t.time AS time, */
+	        FUNCTION('TIME_FORMAT', t.time, '%H:%i:%s') AS time,
 	        t.hours AS hours,
 	        t.userName AS userName,
 	
