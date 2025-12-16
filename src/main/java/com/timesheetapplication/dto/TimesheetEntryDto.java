@@ -7,7 +7,12 @@ import java.util.List;
 public class TimesheetEntryDto {
 
     private Long id;
+    //For single-date entry (optional)
     private LocalDate entryDate;
+    //For multiple-date entry
+    private LocalDate fromDate;
+    private LocalDate toDate;
+
     private String time;
     private String userName;
     private LocalDateTime raisedOn;
@@ -25,6 +30,18 @@ public class TimesheetEntryDto {
 	}
 	public void setEntryDate(LocalDate entryDate) {
 		this.entryDate = entryDate;
+	}
+	public LocalDate getFromDate() {
+		return fromDate;
+	}
+	public void setFromDate(LocalDate fromDate) {
+		this.fromDate = fromDate;
+	}
+	public LocalDate getToDate() {
+		return toDate;
+	}
+	public void setToDate(LocalDate toDate) {
+		this.toDate = toDate;
 	}
 	public String getTime() {
 		return time;
