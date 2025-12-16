@@ -379,45 +379,98 @@ public class TimesheetEntryService {
 	 
 	 @Transactional
     public List<TimesheetEntry> saveLeaveTimesheetEntry(TimesheetEntryDto dto) throws Exception {
-        //prevent duplicate date entries
-        if (timesheetEntryRepository.existsByEntryDateAndUserName(dto.getEntryDate(), dto.getUserName())) {
-            throw new IllegalArgumentException("Timesheet entries already exist for this date.");
+        
+        if (dto.getUserName() == null || dto.getUserName().isBlank()) {
+            throw new IllegalArgumentException("User name is required");
+        }
+    	if (dto.getRows() == null || dto.getRows().isEmpty()) {
+	        throw new IllegalArgumentException("At least one timesheet row is required");
+	    }
+    	//Determine date range
+        LocalDate startDate = dto.getFromDate() != null
+                ? dto.getFromDate()
+                : dto.getEntryDate();
+
+        LocalDate endDate = dto.getToDate() != null
+                ? dto.getToDate()
+                : startDate;
+
+        if (startDate == null || endDate == null) {
+            throw new IllegalArgumentException("Entry date or date range is required");
         }
 
+        if (startDate.isAfter(endDate)) {
+            throw new IllegalArgumentException("From date cannot be after To date");
+        }
+
+        /* ------------------------------------
+        1️⃣ Collect all valid working dates
+        ------------------------------------ */
+	     List<LocalDate> workingDates = new ArrayList<>();
+	     LocalDate date = startDate;
+	
+	     while (!date.isAfter(endDate)) {
+	         DayOfWeek day = date.getDayOfWeek();
+	         if (day != DayOfWeek.SATURDAY && day != DayOfWeek.SUNDAY) {
+	             workingDates.add(date);
+	         }
+	         date = date.plusDays(1);
+	     }
+	     
+	     if (workingDates.isEmpty()) {
+	         throw new IllegalArgumentException("Selected date range contains only weekends");
+	     }
+
+	     /* ------------------------------------
+       		2️⃣ Validate duplicates BEFORE saving
+       	 ------------------------------------ */
+	    for (LocalDate dayEntryDate : workingDates) {
+	        if (timesheetEntryRepository.existsByEntryDateAndUserName(dayEntryDate, dto.getUserName())) {
+	            throw new IllegalArgumentException(
+	                    "Timesheet entry already exists for date: " + dayEntryDate);
+	        }
+	    }
+        //prevent duplicate date entries
+        /*if (timesheetEntryRepository.existsByEntryDateAndUserName(dto.getEntryDate(), dto.getUserName())) {
+            throw new IllegalArgumentException("Timesheet entries already exist for this date.");
+        }*/
+
         List<TimesheetEntry> savedList = new ArrayList<>();
-
-        for (TimesheetRowDto row : dto.getRows()) {
-
-            TimesheetEntry entry = new TimesheetEntry();
-
-            entry.setEntryDate(dto.getEntryDate());
-            entry.setUserName(dto.getUserName());
-
-            entry.setTime(LocalTime.now());
-            
-            //entry.setHours(row.getHours());
-            entry.setHours(BigDecimal.valueOf(9));
-            entry.setDetails(row.getDetails());
-            entry.setRaisedOn(LocalDateTime.now());
-
-            Category category = categoryRepository.findById(row.getCategoryId())
-                    .orElseThrow(() -> new IllegalArgumentException("Category not found"));
-            
-            Platform platform = platformRepository.findById(row.getPlatformId())
-                    .orElseThrow(() -> new IllegalArgumentException("Platform not found"));
-            
-            Project project = projectRepository.findById(row.getProjectId())
-                    .orElseThrow(() -> new IllegalArgumentException("Project not found"));
-            
-            Activity activity = activityRepository.findById(row.getActivityId())
-                    .orElseThrow(() -> new IllegalArgumentException("Activity not found"));
-
-            entry.setCategory(category);
-            entry.setPlatform(platform);
-            entry.setProject(project);
-            entry.setActivity(activity);
-
-            savedList.add(timesheetEntryRepository.save(entry));
+        for (LocalDate dayEntryDate : workingDates) {
+	        for (TimesheetRowDto row : dto.getRows()) {
+	
+	            TimesheetEntry entry = new TimesheetEntry();
+	
+	            //entry.setEntryDate(dto.getEntryDate());
+	            entry.setEntryDate(dayEntryDate);
+	            entry.setUserName(dto.getUserName());
+	
+	            entry.setTime(LocalTime.now());
+	            
+	            //entry.setHours(row.getHours());
+	            entry.setHours(BigDecimal.valueOf(9));
+	            entry.setDetails(row.getDetails());
+	            entry.setRaisedOn(LocalDateTime.now());
+	
+	            Category category = categoryRepository.findById(row.getCategoryId())
+	                    .orElseThrow(() -> new IllegalArgumentException("Category not found"));
+	            
+	            Platform platform = platformRepository.findById(row.getPlatformId())
+	                    .orElseThrow(() -> new IllegalArgumentException("Platform not found"));
+	            
+	            Project project = projectRepository.findById(row.getProjectId())
+	                    .orElseThrow(() -> new IllegalArgumentException("Project not found"));
+	            
+	            Activity activity = activityRepository.findById(row.getActivityId())
+	                    .orElseThrow(() -> new IllegalArgumentException("Activity not found"));
+	
+	            entry.setCategory(category);
+	            entry.setPlatform(platform);
+	            entry.setProject(project);
+	            entry.setActivity(activity);
+	
+	            savedList.add(timesheetEntryRepository.save(entry));
+	        }
         }
         return savedList;
     }
