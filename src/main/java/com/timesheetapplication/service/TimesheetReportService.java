@@ -3,6 +3,7 @@ package com.timesheetapplication.service;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -127,6 +128,13 @@ public class TimesheetReportService {
 	        }
 	    }
 
+	 //6.SORT A–Z
+	    finalResult.sort(
+	            Comparator.comparing(
+	                    TimesheetFillingReportProjection::getUserName,
+	                    String.CASE_INSENSITIVE_ORDER
+	            )
+	    );
 	    return finalResult;
 	}
 
