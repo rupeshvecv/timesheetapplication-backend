@@ -85,6 +85,26 @@ public class TimesheetReportController {
                 .body(new InputStreamResource(excelFile));
     }
     
+    @GetMapping("/timesheetFilledUserExcel/allusers")
+    public ResponseEntity<InputStreamResource> exportReportToFilledUserExcelPDD(
+            @RequestParam LocalDate startDate,
+            @RequestParam LocalDate endDate) throws IOException {
+
+        List<TimesheetFillingReportProjection> report = timesheetReportService.getTimesheetFilledUserReportForAllPDD(startDate, endDate);
+
+        ByteArrayInputStream excelFile = excelGenerator.exportReportToFilledUserExcel(report);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Content-Disposition","attachment; filename=Timesheet_Filling_Report_all_users.xlsx");
+
+        return ResponseEntity.ok()
+                .headers(headers)
+                .contentType(
+                  MediaType.parseMediaType(
+                   "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
+                .body(new InputStreamResource(excelFile));
+    }
+    
     @GetMapping("/timesheetUserProject")
     public ResponseEntity<List<Map<String, Object>>> getTimesheetUserProject(
             @RequestParam LocalDate startDate,

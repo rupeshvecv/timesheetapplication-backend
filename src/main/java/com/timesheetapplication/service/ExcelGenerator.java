@@ -133,6 +133,119 @@ public class ExcelGenerator {
 			return new ByteArrayInputStream(out.toByteArray());
 		} // Workbook auto-closed by try-with-resources
 	}
+	
+	public ByteArrayInputStream exportReportToFilledUserExcelOLD(List<TimesheetFillingReportProjection> report)
+			throws IOException {
+
+		try (XSSFWorkbook workbook = new XSSFWorkbook()) {
+
+			Sheet sheet = workbook.createSheet("Timesheet Filling Report");
+			String[] columns = { "Username", "Department", "Emp Code", "Filled Days", "Percentage Filled",
+					"Total Days" };
+
+			// Header style
+			Row headerRow = sheet.createRow(0);
+			CellStyle headerStyle = workbook.createCellStyle();
+			Font headerFont = workbook.createFont();
+			headerFont.setBold(true);
+			headerStyle.setFont(headerFont);
+
+			for (int i = 0; i < columns.length; i++) {
+				Cell cell = headerRow.createCell(i);
+				cell.setCellValue(columns[i]);
+				cell.setCellStyle(headerStyle);
+			}
+
+			int rowIndex = 1;
+
+			for (TimesheetFillingReportProjection r : report) {
+
+				// Fetch dept & empCode via Feign client (may return null)
+				String department;
+				String empCode;
+				String email;
+				String userFullName;
+				try {
+					department = userFeignClient.getDepartmentByUsername(r.getUserName());
+				} catch (Exception ex) {
+					department = "--";
+				}
+				try {
+					empCode = userFeignClient.getEmpCodeByUsername(r.getUserName());
+				} catch (Exception ex) {
+					empCode = "--";
+				}
+				try {
+					email = userFeignClient.getEmailByUsername(r.getUserName());
+					// userFullName =
+					// userFeignClient.getFullNameByEmail(r.getUserName()+"@vecv.in");
+					userFullName = userFeignClient.getFullNameByEmail(email);
+				} catch (Exception ex) {
+					userFullName = "--";
+				}
+
+				Row row = sheet.createRow(rowIndex++);
+				row.createCell(0).setCellValue(userFullName != null ? userFullName : "--");
+				/// row.createCell(0).setCellValue(r.getUserName() != null ? r.getUserName() :
+				/// "--");
+				row.createCell(1).setCellValue(department != null ? department : "--");
+				row.createCell(2).setCellValue(empCode != null ? empCode : "--");
+
+				// Filled days and totalDays are numbers
+				Cell filledCell = row.createCell(3);
+				filledCell.setCellValue(r.getFilledDays() != null ? r.getFilledDays() : 0L);
+
+				Cell pctCell = row.createCell(4);
+				pctCell.setCellValue(r.getPercentageFilled() != null ? r.getPercentageFilled() : 0.0);
+
+				Cell totalCell = row.createCell(5);
+				totalCell.setCellValue(r.getTotalDays() != null ? r.getTotalDays() : 0L);
+			}
+
+			// Auto-size columns
+			for (int i = 0; i < columns.length; i++) {
+				sheet.autoSizeColumn(i);
+			}
+
+			// =========================
+			// CONDITIONAL FORMATTING %
+			// =========================
+			if (rowIndex > 1) {
+				SheetConditionalFormatting sheetCF = sheet.getSheetConditionalFormatting();
+				CellRangeAddress percentageRange = new CellRangeAddress(1, rowIndex - 1, 4, 4); // col index 4
+
+				// Rule GREEN >= 90
+				ConditionalFormattingRule ruleGreen = sheetCF.createConditionalFormattingRule(">=90");
+				PatternFormatting fillGreen = ruleGreen.createPatternFormatting();
+				fillGreen.setFillForegroundColor(IndexedColors.LIGHT_GREEN.getIndex());
+				// use .getCode() to pass short pattern value
+				fillGreen.setFillPattern(FillPatternType.SOLID_FOREGROUND.getCode());
+
+				// Rule YELLOW between 50 (inclusive) and 90 (exclusive)
+				ConditionalFormattingRule ruleYellow = sheetCF.createConditionalFormattingRule("AND(>=50,<90)");
+				PatternFormatting fillYellow = ruleYellow.createPatternFormatting();
+				fillYellow.setFillForegroundColor(IndexedColors.LIGHT_YELLOW.getIndex());
+				fillYellow.setFillPattern(FillPatternType.SOLID_FOREGROUND.getCode());
+
+				// Rule RED < 50
+				ConditionalFormattingRule ruleRed = sheetCF.createConditionalFormattingRule("<50");
+				PatternFormatting fillRed = ruleRed.createPatternFormatting();
+				fillRed.setFillForegroundColor(IndexedColors.ROSE.getIndex());
+				fillRed.setFillPattern(FillPatternType.SOLID_FOREGROUND.getCode());
+
+				ConditionalFormattingRule[] cfRules = new ConditionalFormattingRule[] { ruleGreen, ruleYellow,
+						ruleRed };
+				CellRangeAddress[] regions = new CellRangeAddress[] { percentageRange };
+
+				sheetCF.addConditionalFormatting(regions, cfRules);
+			}
+
+			// Write workbook to byte array and return stream
+			ByteArrayOutputStream out = new ByteArrayOutputStream();
+			workbook.write(out);
+			return new ByteArrayInputStream(out.toByteArray());
+		} // Workbook auto-closed by try-with-resources
+	}
 
 	public ByteArrayInputStream exportReportToUserProjectExcel(List<Map<String, Object>> data,
 			List<String> projectNames) throws IOException {

@@ -1,11 +1,13 @@
 package com.timesheetapplication.service;
 
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -13,6 +15,7 @@ import org.springframework.stereotype.Service;
 import com.timesheetapplication.client.UserServiceFeignClient;
 import com.timesheetapplication.dto.UserSummaryDTO;
 import com.timesheetapplication.exception.BusinessException;
+import com.timesheetapplication.projection.TimesheetFillingReportImpl;
 import com.timesheetapplication.projection.TimesheetFillingReportProjection;
 import com.timesheetapplication.repository.ProjectRepository;
 import com.timesheetapplication.repository.TimesheetEntryRepository;
@@ -68,6 +71,63 @@ public class TimesheetReportService {
 	    } else {
 	        return timesheetEntryRepository.getTimesheetFilledUserReportByUser(startDate, endDate, username);
 	    }*/
+	}
+
+	public List<TimesheetFillingReportProjection>getTimesheetFilledUserReportForAllPDD(LocalDate startDate,LocalDate endDate) {
+	    //1️.Validate dates
+	    if (startDate == null || endDate == null) {
+	        throw new BusinessException("TS_011");
+	    }
+	    if (startDate.isAfter(endDate)) {
+	        throw new BusinessException("TS_012", startDate, endDate);
+	    }
+
+	    //2️.Fetch ALL PDD users
+	    List<UserSummaryDTO> allUsers = userFeignClient.getAllOptimizedPDDUsers();
+
+	    if (allUsers == null || allUsers.isEmpty()) {
+	        throw new BusinessException("TS_019");
+	    }
+
+	    //3️.Fetch filled users (projection)
+	    List<TimesheetFillingReportProjection> filledUsers = timesheetEntryRepository.getTimesheetFilledUserReport(startDate, endDate);
+
+	    //4️.Map filled users by username
+	    Map<String, TimesheetFillingReportProjection> filledMap =
+	            filledUsers.stream()
+	                    .collect(Collectors.toMap(
+	                            TimesheetFillingReportProjection::getUserName,
+	                            r -> r
+	                    ));
+
+	    long totalDays =
+	            ChronoUnit.DAYS.between(startDate, endDate) + 1;
+
+	    List<TimesheetFillingReportProjection> finalResult =
+	            new ArrayList<>();
+
+	    //5️.Merge ALL users
+	    for (UserSummaryDTO user : allUsers) {
+
+	        TimesheetFillingReportProjection existing =
+	                filledMap.get(user.userName());
+
+	        if (existing != null) {
+	            finalResult.add(existing);
+	        } else {
+	            // ❌ Not filled at all
+	            finalResult.add(
+	                new TimesheetFillingReportImpl(
+	                        user.userName(),
+	                        0L,
+	                        totalDays,
+	                        0.0
+	                )
+	            );
+	        }
+	    }
+
+	    return finalResult;
 	}
 
 	public String getDepartmentByUser(String username) {
