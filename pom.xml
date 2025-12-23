@@ -136,11 +136,6 @@
 		  <version>5.2.5</version>
 		</dependency>
 
-		<dependency>
-			<groupId>com.empoweredge</groupId>
-			<artifactId>empoweredge</artifactId>
-			<version>SANPSHOT-1.0.0</version>
-		</dependency>
 	</dependencies>
 
 	<build>
