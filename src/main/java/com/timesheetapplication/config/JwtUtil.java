@@ -14,10 +14,12 @@ public class JwtUtil {
 
     // ✅ SAME secret key as EmpowerEdge
     private static final String SECRET_KEY = "ThisIsAVeryStrongSecretKeyOfAtLeast32Chars";
-    private static final long EXPIRATION = 1000 * 60 * 60 * 10; // 10 hours
+    //private final long EXPIRATION = 1000 * 60 * 60 * 10; // 10 hours
+    private static final long EXPIRATION = 15 * 60 * 1000; // 15 minutes
 
     private Key getSigningKey() {
-    	 return Keys.hmacShaKeyFor(SECRET_KEY.getBytes());
+    	return Keys.hmacShaKeyFor(SECRET_KEY.getBytes(StandardCharsets.UTF_8));
+   	 //return Keys.hmacShaKeyFor(SECRET_KEY.getBytes());
     }
 
 	/*
