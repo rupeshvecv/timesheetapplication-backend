@@ -34,7 +34,7 @@ public class TimesheetMISScheduler {
 	@Autowired
 	private TimesheetEntryService timesheetEntryService;
 
-	@Scheduled(cron = "0 9 12 * * *")
+	@Scheduled(cron = "0 42 15 * * *")
 	//@Scheduled(cron = "0 30 09 * * MON")//every Monday 9:30 AM
 	public void sendDailyNonEntryNotification() 
 	{
@@ -86,7 +86,7 @@ public class TimesheetMISScheduler {
 			}
 		}
 	
-	@Scheduled(cron = "0 11 12 * * *")
+	@Scheduled(cron = "0 43 15 * * *")
 	//@Scheduled(cron = "0 30 09 * * MON")//every Monday 9:30 AM
 	public void sendWeeklyFridayTimesheetMis() 
 	{
@@ -162,7 +162,7 @@ public class TimesheetMISScheduler {
 		}
 	}
 	
-	@Scheduled(cron = "0 12 12 * * *")
+	@Scheduled(cron = "0 41 15 * * *")
 	//@Scheduled(cron = "0 30 09 * * MON")//every Monday 9:30 AM
 	public void sendWeeklyTimesheetMis() 
 	{
