@@ -1,14 +1,16 @@
 package com.timesheetapplication.service;
 
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 import com.timesheetapplication.client.UserServiceFeignClient;
+import com.timesheetapplication.dto.DepartmentDTO;
 import com.timesheetapplication.dto.UserSummaryDTO;
 import com.timesheetapplication.exception.BusinessException;
 
 import feign.FeignException;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import java.util.List;
 
 @Service
 public class TimesheetUserService {
@@ -248,4 +250,54 @@ public class TimesheetUserService {
         }
     }
     
+    public List<UserSummaryDTO> fetchAllFunctionHead() {
+    	try {
+            List<UserSummaryDTO> users = userServiceFeignClient.getAllFunctionHead();
+
+            if (users == null || users.isEmpty()) {
+                throw new BusinessException("USR_013");
+            }
+            System.out.println("✅ Successfully fetched " + users.size() + " Function Heads from EmpowerEdge");
+            return users;
+        } catch (BusinessException ex) {
+            throw ex;
+        } catch (Exception ex) {
+            System.err.println("❌ Error calling EmpowerEdge API: " + ex.getMessage());
+            throw new BusinessException("USR_014");
+        }
+    }
+    
+    public List<DepartmentDTO> fetchAllDepartments() {
+    	try {
+            List<DepartmentDTO> departments = userServiceFeignClient.getDepartments();
+
+            if (departments == null || departments.isEmpty()) {
+                throw new BusinessException("USR_015");
+            }
+            System.out.println("✅ Successfully fetched " + departments.size() + " Departmentss from EmpowerEdge");
+            return departments;
+        } catch (BusinessException ex) {
+            throw ex;
+        } catch (Exception ex) {
+            System.err.println("❌ Error calling EmpowerEdge API: " + ex.getMessage());
+            throw new BusinessException("USR_016");
+        }
+    }
+    
+    public List<DepartmentDTO> fetchAllPDDDepartments() {
+    	try {
+            List<DepartmentDTO> departments = userServiceFeignClient.getPDDDepartments();
+
+            if (departments == null || departments.isEmpty()) {
+                throw new BusinessException("USR_015");
+            }
+            System.out.println("✅ Successfully fetched " + departments.size() + " PDD Departmentss from EmpowerEdge");
+            return departments;
+        } catch (BusinessException ex) {
+            throw ex;
+        } catch (Exception ex) {
+            System.err.println("❌ Error calling EmpowerEdge API: " + ex.getMessage());
+            throw new BusinessException("USR_016");
+        }
+    }
 }

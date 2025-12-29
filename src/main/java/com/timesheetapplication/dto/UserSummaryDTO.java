@@ -15,6 +15,7 @@ public record UserSummaryDTO(
         String email,
         String contactNo,
         LocalDateTime originated,
+        String functionHead,
 
         Long statusId,
         Long superiorId,
@@ -136,5 +137,12 @@ public record UserSummaryDTO(
 		return roleNames;
 	}
 	
+	public String functionHead() {
+		return functionHead;
+	}
+
+	public String departmentDescription() {
+		return departmentDescription;
+	}
 }
 
