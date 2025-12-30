@@ -36,49 +36,53 @@ public class ProjectService {
 	public List<ProjectDao> getAllProjects() {
 		List<Project> projects = (List<Project>) projectRepository.findAll();
 		if (projects.isEmpty()) {
-			//throw new ResourceNotFoundException("No projects found in the database");
 			throw new BusinessException("PRJ_001");
 		}
 
-		return projects.stream().map(p -> new ProjectDao(p.getId(), p.getProjectName(), p.getDescription(), p.getStatus(), p.getProjectOwner(), p.getProjectStartDate(), p.getProjectEndDate(), p.getCategory().getId(), p.getPlatform().getId()))
-				.collect(Collectors.toList());
+		 return projects.stream().map(p ->
+         new ProjectDao(
+                 p.getId(),
+                 p.getProjectName(),
+                 p.getDescription(),
+                 p.getStatus(),
+                 p.getProjectOwner(),
+                 p.getProjectStartDate(),
+                 p.getProjectEndDate(),
+                 p.getCategory() != null ? p.getCategory().getId() : null,
+                 p.getPlatform() != null ? p.getPlatform().getId() : null,
+                 p.getCategory() != null ? p.getCategory().getCategoryName() : null,   // ✅ Category Name
+                 p.getPlatform() != null ? p.getPlatform().getPlatformName() : null    // ✅ Platform Name
+         )
+ ).collect(Collectors.toList());
 	}
 
 	public Project getProjectById(Long id) {
 		if (id == null) {
-			//throw new BadRequestException("Project ID cannot be null");
 			throw new BusinessException("PRJ_004");
 		}
 
 		return projectRepository.findById(id)
-				//.orElseThrow(() -> new ResourceNotFoundException("Project not found with ID: " + id));
 				.orElseThrow(() -> new BusinessException("PRJ_002",id.toString()));
 	}
 
 	public ProjectDao addProject(ProjectDao dao) {
 		if (dao == null) {
-			//throw new BadRequestException("Project data cannot be null");
 			throw new BusinessException("PRJ_005");
 		}
 		if (dao.getProjectName() == null || dao.getProjectName().trim().isEmpty()) {
-			//throw new BadRequestException("Project name is required");
 			throw new BusinessException("PRJ_006");
 		}
 		if (dao.getCategoryId() == null) {
-			//throw new BadRequestException("Category ID is required for creating a Project");
 			throw new BusinessException("PRJ_009");
 		}
 		if (dao.getPlatformId() == null) {
-			//throw new BadRequestException("Platform ID is required for creating a Project");
 			throw new BusinessException("PRJ_010");
 		}
 
 		Category category = categoryRepository.findById(dao.getCategoryId())
-				//.orElseThrow(() -> new ResourceNotFoundException("Category not found with ID: " + dao.getCategoryId()));
 				.orElseThrow(() -> new BusinessException("CAT_002",dao.getCategoryId().toString()));
 		
 		Platform platform = platformRepository.findById(dao.getPlatformId())
-				//.orElseThrow(() -> new ResourceNotFoundException("Platform not found with ID: " + dao.getPlatformId()));
 				.orElseThrow(() -> new BusinessException("PLT_003",dao.getPlatformId().toString()));
 
 		Project project = new Project();
@@ -92,17 +96,27 @@ public class ProjectService {
 		project.setPlatform(platform);
 		
 		Project saved = projectRepository.save(project);
-		return new ProjectDao(saved.getId(), saved.getProjectName(),saved.getDescription(),saved.getProjectOwner(),saved.getStatus(),saved.getProjectStartDate(),saved.getProjectEndDate(), category.getId(),platform.getId());
+		return new ProjectDao(
+	            saved.getId(),
+	            saved.getProjectName(),
+	            saved.getDescription(),
+	            saved.getStatus(),
+	            saved.getProjectOwner(),
+	            saved.getProjectStartDate(),
+	            saved.getProjectEndDate(),
+	            category.getId(),
+	            platform.getId(),
+	            category.getCategoryName(),
+	            platform.getPlatformName()
+	    );
 	}
 
 	public Project updateProject(Long id, Project updatedProject) {
 		if (id == null) {
-			//throw new BadRequestException("Project ID is required for update");
 			throw new BusinessException("PRJ_010");
 		}
 
 		Project existing = projectRepository.findById(id)
-				//.orElseThrow(() -> new ResourceNotFoundException("Project not found with ID: " + id));
 				.orElseThrow(() -> new BusinessException("PRJ_002",id.toString()));
 
 		if (updatedProject.getProjectName() != null && !updatedProject.getProjectName().trim().isEmpty()) {
@@ -112,7 +126,6 @@ public class ProjectService {
 		if (updatedProject.getCategory() != null) {
 			Long eqId = updatedProject.getCategory().getId();
 			Category category = categoryRepository.findById(eqId)
-					//.orElseThrow(() -> new ResourceNotFoundException("Category not found with ID: " + eqId));
 					.orElseThrow(() -> new BusinessException("CAT_002",eqId.toString()));
 			existing.setCategory(category);
 		}
@@ -120,7 +133,6 @@ public class ProjectService {
 		if (updatedProject.getPlatform() != null) {
 			Long eqId = updatedProject.getPlatform().getId();
 			Platform platform = platformRepository.findById(eqId)
-					//.orElseThrow(() -> new ResourceNotFoundException("Platform not found with ID: " + eqId));
 					.orElseThrow(() -> new BusinessException("PLT_003",eqId.toString()));
 			existing.setPlatform(platform);
 		}
@@ -130,12 +142,10 @@ public class ProjectService {
 
 	public void deleteProject(Long id) {
 		if (id == null) {
-			//throw new BadRequestException("Project ID cannot be null");
 			throw new BusinessException("PRJ_004");
 		}
 
 		if (!projectRepository.existsById(id)) {
-			//throw new ResourceNotFoundException("Project not found with ID: " + id);
 			throw new BusinessException("PRJ_002",id.toString());
 		}
 

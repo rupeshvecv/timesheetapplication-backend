@@ -59,7 +59,6 @@ public class TimesheetEntryService {
 	public TimesheetEntry getById(Long id) {
 		return timesheetEntryRepository.findById(id)
 				.orElseThrow(() -> new BusinessException("TS_007", id));
-				//.orElseThrow(() -> new IllegalArgumentException("Timesheet not found: " + id));
 	}
 
 	/*public List<TimesheetEntry> getAll() {
@@ -120,11 +119,9 @@ public class TimesheetEntryService {
     public List<TimesheetEntry> saveAllTimesheetEntry(TimesheetEntryDto dto) throws Exception {
     	
     	if (dto.getUserName() == null || dto.getUserName().isBlank()) {
-            //throw new IllegalArgumentException("User name is required");
             throw new BusinessException("TS_002");
         }
     	if (dto.getRows() == null || dto.getRows().isEmpty()) {
-	        //throw new IllegalArgumentException("At least one timesheet row is required");
 	        throw new BusinessException("TS_003");
 	    }
     	//Determine date range
@@ -137,12 +134,10 @@ public class TimesheetEntryService {
                 : startDate;
 
         if (startDate == null || endDate == null) {
-            //throw new IllegalArgumentException("Entry date or date range is required");
             throw new BusinessException("TS_004");
         }
 
         if (startDate.isAfter(endDate)) {
-            //throw new IllegalArgumentException("From date cannot be after To date");
             throw new BusinessException("TS_005");
         }
 
@@ -161,7 +156,6 @@ public class TimesheetEntryService {
 	     }
 	     
 	     if (workingDates.isEmpty()) {
-	         //throw new IllegalArgumentException("Selected date range contains only weekends");
 	         throw new BusinessException("TS_006");
 	     }
 
@@ -170,7 +164,6 @@ public class TimesheetEntryService {
        	 ------------------------------------ */
 	    for (LocalDate dayEntryDate : workingDates) {
 	        if (timesheetEntryRepository.existsByEntryDateAndUserName(dayEntryDate, dto.getUserName())) {
-	            //throw new IllegalArgumentException("Timesheet entry already exists for date: " + dayEntryDate);
 	            throw new BusinessException("TS_001", dayEntryDate.toString());
 	        }
 	    }
@@ -197,19 +190,15 @@ public class TimesheetEntryService {
 	            entry.setRaisedOn(LocalDateTime.now());
 	
 	            Category category = categoryRepository.findById(row.getCategoryId())
-	                    //.orElseThrow(() -> new IllegalArgumentException("Category not found"));
 	            		.orElseThrow(() -> new BusinessException("CAT_001"));
 	            
 	            Platform platform = platformRepository.findById(row.getPlatformId())
-	                    //.orElseThrow(() -> new IllegalArgumentException("Platform not found"));
 	            		.orElseThrow(() -> new BusinessException("PLT_001"));
 	            
 	            Project project = projectRepository.findById(row.getProjectId())
-	                    //.orElseThrow(() -> new IllegalArgumentException("Project not found"));
 	            		.orElseThrow(() -> new BusinessException("PRJ_001"));
 	            
 	            Activity activity = activityRepository.findById(row.getActivityId())
-	                    //.orElseThrow(() -> new IllegalArgumentException("Activity not found"));
 	           			.orElseThrow(() -> new BusinessException("ACT_001"));
 	
 	            entry.setCategory(category);
@@ -229,7 +218,6 @@ public class TimesheetEntryService {
     @Transactional
     public List<TimesheetEntry> updateAllTimesheetEntry(List<TimesheetEntryDto> entryRequests) {
         if (entryRequests == null || entryRequests.isEmpty()) {
-            //throw new IllegalArgumentException("Entry list cannot be empty");
             throw new BusinessException("TS_008");
         }
 
@@ -238,13 +226,11 @@ public class TimesheetEntryService {
         for (TimesheetEntryDto dto : entryRequests) {
             //1. Validate ID for parent entry
             if (dto.getId() == null) {
-                //throw new IllegalArgumentException("TimesheetEntry ID is required for update.");
                 throw new BusinessException("TS_009");
             }
 
             //2. Fetch existing parent entry
             TimesheetEntry existing = timesheetEntryRepository.findById(dto.getId())
-                    //.orElseThrow(() -> new IllegalArgumentException("Entry not found: " + dto.getId()));
             		.orElseThrow(() -> new BusinessException("TS_007", dto.getId()));
 
             //3. Update parent-level fields
@@ -270,19 +256,15 @@ public class TimesheetEntryService {
 
                     //Fetch associations
                 	 Category category = categoryRepository.findById(row.getCategoryId())
-     	                    //.orElseThrow(() -> new IllegalArgumentException("Category not found"));
      	            		.orElseThrow(() -> new BusinessException("CAT_001"));
      	            
      	            Platform platform = platformRepository.findById(row.getPlatformId())
-     	                    //.orElseThrow(() -> new IllegalArgumentException("Platform not found"));
      	            		.orElseThrow(() -> new BusinessException("PLT_001"));
      	            
      	            Project project = projectRepository.findById(row.getProjectId())
-     	                    //.orElseThrow(() -> new IllegalArgumentException("Project not found"));
      	            		.orElseThrow(() -> new BusinessException("PRJ_001"));
      	            
      	            Activity activity = activityRepository.findById(row.getActivityId())
-     	                    //.orElseThrow(() -> new IllegalArgumentException("Activity not found"));
      	           			.orElseThrow(() -> new BusinessException("ACT_001"));
 
                     //Create a NEW TimesheetEntry for every row
@@ -313,7 +295,6 @@ public class TimesheetEntryService {
     public void deleteTimesheetEntry(LocalDate entryDate, String user) {
         int count = timesheetEntryRepository.deleteByEntryDateAndUserName(entryDate, user);
         if (count == 0) {
-            //throw new IllegalArgumentException("No timesheet entry found for date "+ entryDate + " and user " + user);
         	throw new BusinessException("TS_010",entryDate.toString(),user.toString());
         }
     }
@@ -341,11 +322,9 @@ public class TimesheetEntryService {
     public List<TimesheetEntry> saveLeaveTimesheetEntry(TimesheetEntryDto dto) throws Exception {
         
         if (dto.getUserName() == null || dto.getUserName().isBlank()) {
-            //throw new IllegalArgumentException("User name is required");
             throw new BusinessException("TS_002");
         }
     	if (dto.getRows() == null || dto.getRows().isEmpty()) {
-	        //throw new IllegalArgumentException("At least one timesheet row is required");
 	        throw new BusinessException("TS_003");
 	    }
     	//Determine date range
@@ -358,12 +337,10 @@ public class TimesheetEntryService {
                 : startDate;
 
         if (startDate == null || endDate == null) {
-            //throw new IllegalArgumentException("Entry date or date range is required");
             throw new BusinessException("TS_004");
         }
 
         if (startDate.isAfter(endDate)) {
-            //throw new IllegalArgumentException("From date cannot be after To date");
             throw new BusinessException("TS_005");
         }
 
@@ -382,7 +359,6 @@ public class TimesheetEntryService {
 	     }
 	     
 	     if (workingDates.isEmpty()) {
-	         //throw new IllegalArgumentException("Selected date range contains only weekends");
 	    	 throw new BusinessException("TS_006");
 	     }
 
@@ -391,7 +367,6 @@ public class TimesheetEntryService {
        	 ------------------------------------ */
 	    for (LocalDate dayEntryDate : workingDates) {
 	        if (timesheetEntryRepository.existsByEntryDateAndUserName(dayEntryDate, dto.getUserName())) {
-	            //throw new IllegalArgumentException("Timesheet entry already exists for date: " + dayEntryDate);
 	            throw new BusinessException("TS_001", dayEntryDate.toString());
 	        }
 	    }
@@ -418,19 +393,15 @@ public class TimesheetEntryService {
 	            entry.setRaisedOn(LocalDateTime.now());
 	
 	            Category category = categoryRepository.findById(row.getCategoryId())
-	                    //.orElseThrow(() -> new IllegalArgumentException("Category not found"));
 	            		.orElseThrow(() -> new BusinessException("CAT_001"));
 	            
 	            Platform platform = platformRepository.findById(row.getPlatformId())
-	                    //.orElseThrow(() -> new IllegalArgumentException("Platform not found"));
 	            		.orElseThrow(() -> new BusinessException("PLT_001"));
 	            
 	            Project project = projectRepository.findById(row.getProjectId())
-	                    //.orElseThrow(() -> new IllegalArgumentException("Project not found"));
 	            		.orElseThrow(() -> new BusinessException("PRJ_001"));
 	            
 	            Activity activity = activityRepository.findById(row.getActivityId())
-	                    //.orElseThrow(() -> new IllegalArgumentException("Activity not found"));
 	           			.orElseThrow(() -> new BusinessException("ACT_001"));
 	
 	            entry.setCategory(category);
