@@ -86,6 +86,11 @@ public class TimesheetEntryController {
         return ResponseEntity.ok(timesheetEntryService.saveAllTimesheetEntry(dto));
     }
 
+	@PostMapping("/timesheetEntry/saveLeave")
+    public ResponseEntity<?> saveLeaveTimesheetEntry(@RequestBody TimesheetEntryDto dto) throws Exception {
+        return ResponseEntity.ok(timesheetEntryService.saveLeaveTimesheetEntry(dto));
+    }
+	
 	@PutMapping("/updateAll")
 	public ResponseEntity<?> updateMultipleEntries(@RequestBody List<TimesheetEntryDto> entries) {
 	    return ResponseEntity.ok(timesheetEntryService.updateAllTimesheetEntry(entries));

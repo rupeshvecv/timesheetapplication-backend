@@ -17,6 +17,7 @@ public class UserDTO {
 	private String contactNo;
 	private String location;
 	private LocalDate originated;
+	private String functionHead;
 
 	// Related entity IDs
 	private Long statusId;
@@ -171,4 +172,13 @@ public class UserDTO {
 	public void setRoleIds(Set<Long> roleIds) {
 		this.roleIds = roleIds;
 	}
+
+	public String getFunctionHead() {
+		return functionHead;
+	}
+
+	public void setFunctionHead(String functionHead) {
+		this.functionHead = functionHead;
+	}
+	
 }

@@ -4,8 +4,7 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
-import com.timesheetapplication.exception.BadRequestException;
-import com.timesheetapplication.exception.ResourceNotFoundException;
+import com.timesheetapplication.exception.BusinessException;
 import com.timesheetapplication.model.Platform;
 import com.timesheetapplication.repository.PlatformRepository;
 
@@ -21,43 +20,43 @@ public class PlatformService {
 	public List<Platform> getAllPlatforms() {
 		List<Platform> platforms = (List<Platform>) platformRepository.findAll();
 		if (platforms.isEmpty()) {
-			throw new ResourceNotFoundException("No Platforms found in the system");
+			throw new BusinessException("PLT_001");
 		}
 		return platforms;
 	}
 
 	public Platform getPlatformById(Long id) {
 		if (id == null) {
-			throw new BadRequestException("Platform ID must not be null");
+			throw new BusinessException("PLT_002");
 		}
 		return platformRepository.findById(id)
-				.orElseThrow(() -> new ResourceNotFoundException("Platform not found with ID: " + id));
+				.orElseThrow(() -> new BusinessException("PLT_003",id.toString()));
 	}
 
 	public Platform addPlatform(Platform platform) {
 		if (platform == null) {
-			throw new BadRequestException("Platform data cannot be null");
+			throw new BusinessException("PLT_004");
 		}
 		if (platform.getPlatformName() == null || platform.getPlatformName().trim().isEmpty()) {
-			throw new BadRequestException("Platform name is required");
+			throw new BusinessException("PLT_005");
 		}
 		return platformRepository.save(platform);
 	}
 
 	public Platform updatePlatform(Long id, Platform updatedPlatform) {
 		if (id == null) {
-			throw new BadRequestException("Platform ID is required for update");
+			throw new BusinessException("PLT_007");
 		}
 		if (updatedPlatform == null) {
-			throw new BadRequestException("Updated Platform data cannot be null");
+			throw new BusinessException("PLT_004");
 		}
 		Platform existing = platformRepository.findById(id)
-				.orElseThrow(() -> new ResourceNotFoundException("Platform not found with ID: " + id));
+				.orElseThrow(() -> new BusinessException("PLT_003",id.toString()));
 
 		if (updatedPlatform.getPlatformName() != null && !updatedPlatform.getPlatformName().trim().isEmpty()) {
 			existing.setPlatformName(updatedPlatform.getPlatformName());
 		} else {
-			throw new BadRequestException("Platform name cannot be empty");
+			throw new BusinessException("PLT_005");
 		}
 
 		return platformRepository.save(existing);
@@ -65,11 +64,11 @@ public class PlatformService {
 
 	public void deletePlatform(Long id) {
 		if (id == null) {
-			throw new BadRequestException("Platform ID is required for deletion");
+			throw new BusinessException("PLT_006");
 		}
 
 		if (!platformRepository.existsById(id)) {
-			throw new ResourceNotFoundException("Platform not found with ID: " + id);
+			throw new BusinessException("PLT_003", id.toString());
 		}
 		platformRepository.deleteById(id);
 	}

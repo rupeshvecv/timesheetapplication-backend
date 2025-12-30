@@ -7,7 +7,7 @@ public record UserSummaryDTO(
         Long id,
         String empCode,
         String userName,
-        String password,
+        //String password,
         String profilePic,
         String firstName,
         String middleName,
@@ -15,6 +15,7 @@ public record UserSummaryDTO(
         String email,
         String contactNo,
         LocalDateTime originated,
+        String functionHead,
 
         Long statusId,
         Long superiorId,
@@ -49,10 +50,9 @@ public record UserSummaryDTO(
 		return userName;
 	}
 
-	public String password() {
-		return password;
-	}
-
+	/*
+	 * public String password() { return password; }
+	 */
 	public String profilePic() {
 		return profilePic;
 	}
@@ -137,5 +137,12 @@ public record UserSummaryDTO(
 		return roleNames;
 	}
 	
+	public String functionHead() {
+		return functionHead;
+	}
+
+	public String departmentDescription() {
+		return departmentDescription;
+	}
 }
 

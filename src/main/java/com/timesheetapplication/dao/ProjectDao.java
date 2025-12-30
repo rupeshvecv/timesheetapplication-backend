@@ -12,22 +12,36 @@ public class ProjectDao {
 	private LocalDate projectEndDate;
     private Long categoryId;
     private Long platformId;
-
+    private String categoryName;
+    private String platformName;
+    
     public ProjectDao() {}
 
-	public ProjectDao(Long id,String projectName, String description, String status, String projectOwner, LocalDate projectStartDate,
-			LocalDate projectEndDate, Long categoryId, Long platformId) {
-		super();
-		this.id = id;
-		this.projectName = projectName;
-		this.description = description;
-		this.status = status;
-		this.projectOwner = projectOwner;
-		this.projectStartDate = projectStartDate;
-		this.projectEndDate = projectEndDate;
-		this.categoryId = categoryId;
-		this.platformId = platformId;
-	}
+    public ProjectDao(
+            Long id,
+            String projectName,
+            String description,
+            String status,
+            String projectOwner,
+            LocalDate projectStartDate,
+            LocalDate projectEndDate,
+            Long categoryId,
+            Long platformId,
+            String categoryName,
+            String platformName
+    ) {
+        this.id = id;
+        this.projectName = projectName;
+        this.description = description;
+        this.status = status;
+        this.projectOwner = projectOwner;
+        this.projectStartDate = projectStartDate;
+        this.projectEndDate = projectEndDate;
+        this.categoryId = categoryId;
+        this.platformId = platformId;
+        this.categoryName = categoryName;
+        this.platformName = platformName;
+    }
 
 	public Long getId() {
 		return id;
@@ -100,6 +114,22 @@ public class ProjectDao {
 
 	public void setPlatformId(Long platformId) {
 		this.platformId = platformId;
+	}
+
+	public String getCategoryName() {
+		return categoryName;
+	}
+
+	public void setCategoryName(String categoryName) {
+		this.categoryName = categoryName;
+	}
+
+	public String getPlatformName() {
+		return platformName;
+	}
+
+	public void setPlatformName(String platformName) {
+		this.platformName = platformName;
 	}
 
 }

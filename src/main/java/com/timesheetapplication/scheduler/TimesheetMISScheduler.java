@@ -15,9 +15,12 @@ import org.springframework.stereotype.Component;
 import com.timesheetapplication.client.UserServiceFeignClient;
 import com.timesheetapplication.dto.UserDTO;
 import com.timesheetapplication.dto.UserSummaryDTO;
+import com.timesheetapplication.exception.BusinessException;
 import com.timesheetapplication.projection.TimesheetEntryProjection;
 import com.timesheetapplication.service.MailService;
 import com.timesheetapplication.service.TimesheetEntryService;
+
+import feign.FeignException;
 
 @Component
 public class TimesheetMISScheduler {
@@ -31,7 +34,7 @@ public class TimesheetMISScheduler {
 	@Autowired
 	private TimesheetEntryService timesheetEntryService;
 
-	@Scheduled(cron = "0 9 12 * * *")
+	@Scheduled(cron = "0 42 15 * * *")
 	//@Scheduled(cron = "0 30 09 * * MON")//every Monday 9:30 AM
 	public void sendDailyNonEntryNotification() 
 	{
@@ -40,18 +43,26 @@ public class TimesheetMISScheduler {
 
 		System.out.println("📅 Generating Daily NonEntryNotification sendDailyNonEntryNotification from " + startDate + " to " + endDate);
 
-		//Fetch all users
-		List<UserSummaryDTO> allPDDUsers 		= userServiceFeignClient.getAllOptimizedPDDUsers();
-		System.out.println("sendWeeklyTimesheetMis(allPDDUsers.SIZE) " + allPDDUsers.size() + " :Total PDD users: " + allPDDUsers);
+		//1️.Fetch all PDD users safely
+	    List<UserSummaryDTO> allPDDUsers;
+	    try {
+	        allPDDUsers = userServiceFeignClient.getAllOptimizedPDDUsers();
+	    } catch (FeignException ex) {
+	    	System.out.println("Error fetching PDD users "+ ex);
+	        throw new BusinessException("TSMIS_004");
+	    }
+
+	    if (allPDDUsers == null || allPDDUsers.isEmpty()) {
+	        throw new BusinessException("TSMIS_001");
+	    }
 
    	    String[] toAllPDDRecipients			= extractEmailsFromSummaryUsers(allPDDUsers);
    	    System.out.println("TimesheetMISScheduler.sendDailyNonEntryNotification( toAllPDDRecipients.SIZE) "+toAllPDDRecipients.length);
    	    System.out.println("TimesheetMISScheduler.sendDailyNonEntryNotification( toAllPDDRecipients) "+toAllPDDRecipients);
 	    
-	   	if (toAllPDDRecipients.length == 0) {
-	   	    System.out.println("⚠️ No PDD recipients to send mail!");
-	   	    return;
-	   	}
+	   	 if (toAllPDDRecipients == null || toAllPDDRecipients.length == 0) {
+	         throw new BusinessException("TSMIS_002");
+	     }
 
 			String htmlBody = buildDailyNonEntryHtmlMail();
 			
@@ -71,10 +82,11 @@ public class TimesheetMISScheduler {
 				System.out.println("✅ Non Entry Notification for Timesheet mail sent successfully!");
 			} catch (Exception e) {
 				System.err.println("❌ Error sending Weekly MIS Mail: " + e.getMessage());
+				throw new BusinessException("MIS_003");
 			}
 		}
 	
-	@Scheduled(cron = "0 11 12 * * *")
+	@Scheduled(cron = "0 43 15 * * *")
 	//@Scheduled(cron = "0 30 09 * * MON")//every Monday 9:30 AM
 	public void sendWeeklyFridayTimesheetMis() 
 	{
@@ -84,26 +96,33 @@ public class TimesheetMISScheduler {
 
 		System.out.println("📅 Generating Weekly MIS sendWeeklyFridayTimesheetMis from " + startDate + " to " + endDate);
 
-		//Fetch all users
-		List<UserSummaryDTO> allPDDUsers = userServiceFeignClient.getAllOptimizedPDDUsers();
-		System.out.println(
-				"sendWeeklyTimesheetMis(allPDDUsers.SIZE) " + allPDDUsers.size() + " :Total PDD users: " + allPDDUsers);
+		//1️.Fetch all PDD users safely
+	    List<UserSummaryDTO> allPDDUsers;
+	    try {
+	        allPDDUsers = userServiceFeignClient.getAllOptimizedPDDUsers();
+	    } catch (FeignException ex) {
+	    	System.out.println("Error fetching PDD users "+ ex);
+	        throw new BusinessException("TSMIS_004");
+	    }
 
-		if (allPDDUsers == null || allPDDUsers.isEmpty()) {
-			System.out.println("⚠️ No users found!");
-			return;
-		}
-
+	    if (allPDDUsers == null || allPDDUsers.isEmpty()) {
+	        throw new BusinessException("TSMIS_001");
+	    }
+	    
 		//Iterate user -> subordinate -> timesheet
 		for (UserSummaryDTO manager : allPDDUsers) {
 			//Fetch subordinate users for given manager
-			List<UserSummaryDTO> subordinates = userServiceFeignClient.getSubordinateUsers(manager.userName());
-			System.out.println("Subordinates for Manager " + manager.userName() + ": " + subordinates.size());
+			List<UserSummaryDTO> subordinates;
+	        try {
+	            subordinates = userServiceFeignClient.getSubordinateUsers(manager.userName());
+	        } catch (FeignException ex) {
+	        	System.out.println("Error fetching subordinates for manager {}"+ manager.userName()+","+ ex);
+	            throw new BusinessException("TSMIS_007");
+	        }
 
-			if (subordinates.isEmpty()) {
-				System.out.println("⚠️ No subordinates under Manager " + manager.userName());
-				continue;
-			}
+	        if (subordinates == null || subordinates.isEmpty()) {
+	            continue;
+	        }
 
 			//Map<EmployeeName, Map<Date, Status>>
 			Map<String, Map<LocalDate, String>> weeklyData = new LinkedHashMap<>();
@@ -114,13 +133,10 @@ public class TimesheetMISScheduler {
 				LocalDate day = startDate;
 
 				while (!day.isAfter(endDate)) {
-					List<TimesheetEntryProjection> dayEntries = timesheetEntryService
-							.getAllDateUserWiseOptimizedTimesheetEntries(subordinate.userName(), day, day);
-
+					List<TimesheetEntryProjection> dayEntries = timesheetEntryService.getAllDateUserWiseOptimizedTimesheetEntries(subordinate.userName(), day, day);
 					statusMap.put(day, dayEntries.isEmpty() ? "Not Filled" : "Filled");
 					day = day.plusDays(1);
 				}
-
 				weeklyData.put(subordinate.firstName() + " " + subordinate.lastName(), statusMap);
 			}
 
@@ -141,11 +157,12 @@ public class TimesheetMISScheduler {
 				System.out.println("✅ Daily Non Entry Mail sent successfully!");
 			} catch (Exception e) {
 				System.err.println("❌ Error sending Weekly MIS Mail: " + e.getMessage());
+				throw new BusinessException("MIS_008");
 			}
 		}
 	}
 	
-	@Scheduled(cron = "0 12 12 * * *")
+	@Scheduled(cron = "0 41 15 * * *")
 	//@Scheduled(cron = "0 30 09 * * MON")//every Monday 9:30 AM
 	public void sendWeeklyTimesheetMis() 
 	{
@@ -157,26 +174,34 @@ public class TimesheetMISScheduler {
 
 		System.out.println("📅 Generating Weekly MIS sendWeeklyTimesheetMis from " + startDate + " to " + endDate);
 
-		//Fetch all users
-		List<UserSummaryDTO> allPDDUsers = userServiceFeignClient.getAllOptimizedPDDUsers();
-		System.out.println(
-				"sendWeeklyTimesheetMis(allPDDUsers.SIZE) " + allPDDUsers.size() + " :Total PDD users: " + allPDDUsers);
+		//1️.Fetch all PDD users safely
+	    List<UserSummaryDTO> allPDDUsers;
+	    try {
+	        allPDDUsers = userServiceFeignClient.getAllOptimizedPDDUsers();
+	    } catch (FeignException ex) {
+	    	System.out.println("Error fetching PDD users "+ ex);
+	        throw new BusinessException("TSMIS_004");
+	    }
 
-		if (allPDDUsers == null || allPDDUsers.isEmpty()) {
-			System.out.println("⚠️ No users found!");
-			return;
-		}
+	    if (allPDDUsers == null || allPDDUsers.isEmpty()) {
+	        throw new BusinessException("TSMIS_001");
+	    }
 
 		//Iterate user -> subordinate -> timesheet
 		for (UserSummaryDTO manager : allPDDUsers) {
 			//Fetch subordinate users for given manager
-			List<UserSummaryDTO> subordinates = userServiceFeignClient.getSubordinateUsers(manager.userName());
-			System.out.println("Subordinates for Manager " + manager.userName() + ": " + subordinates.size());
+			//Fetch subordinate users for given manager
+			List<UserSummaryDTO> subordinates;
+	        try {
+	            subordinates = userServiceFeignClient.getSubordinateUsers(manager.userName());
+	        } catch (FeignException ex) {
+	        	System.out.println("Error fetching subordinates for manager {}"+ manager.userName()+","+ ex);
+	            throw new BusinessException("TSMIS_007");
+	        }
 
-			if (subordinates.isEmpty()) {
-				System.out.println("⚠️ No subordinates under Manager " + manager.userName());
-				continue;
-			}
+	        if (subordinates == null || subordinates.isEmpty()) {
+	            continue;
+	        }
 
 			//Map<EmployeeName, Map<Date, Status>>
 			Map<String, Map<LocalDate, String>> weeklyData = new LinkedHashMap<>();
@@ -218,9 +243,9 @@ public class TimesheetMISScheduler {
 				System.out.println("✅ Weekly MIS Mail sent successfully!");
 			} catch (Exception e) {
 				System.err.println("❌ Error sending Weekly MIS Mail: " + e.getMessage());
+				throw new BusinessException("MIS_008");
 			}
 		}
-
 	}
 
 	private String buildWeeklyHtmlMail(LocalDate startDate, LocalDate endDate,

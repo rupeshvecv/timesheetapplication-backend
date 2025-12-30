@@ -7,6 +7,7 @@ import java.time.LocalTime;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -39,23 +40,23 @@ public class TimesheetEntry {
 	@Column(name = "user_name", nullable = false)
 	private String userName;
 
-	@ManyToOne
+	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "category_id")
 	private Category category;
 
-	@ManyToOne
+	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "platform_id")
 	private Platform platform;
 
-	@ManyToOne
+	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "project_id")
 	private Project project;
 
-	@ManyToOne
+	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "activity_id")
 	private Activity activity;
 
-	@Column(name = "details")
+	@Column(name = "details",length = 500)
 	private String details;
 
 	@Column(name = "raised_on")
