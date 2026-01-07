@@ -2,7 +2,9 @@ package com.timesheetapplication.scheduler;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -13,6 +15,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
 import com.timesheetapplication.client.UserServiceFeignClient;
+import com.timesheetapplication.dto.NotFilledDTO;
 import com.timesheetapplication.dto.UserDTO;
 import com.timesheetapplication.dto.UserSummaryDTO;
 import com.timesheetapplication.exception.BusinessException;
@@ -86,7 +89,7 @@ public class TimesheetMISScheduler {
 			}
 		}
 	
-	@Scheduled(cron = "0 43 15 * * *")
+	@Scheduled(cron = "0 55 09 * * *")
 	//@Scheduled(cron = "0 30 09 * * MON")//every Monday 9:30 AM
 	public void sendWeeklyFridayTimesheetMis() 
 	{
@@ -111,19 +114,19 @@ public class TimesheetMISScheduler {
 	    
 		//Iterate user -> subordinate -> timesheet
 		for (UserSummaryDTO manager : allPDDUsers) {
+			System.out.println("AAAAA fetching subordinates for 1111 manager.userName() {}"+ manager.userName());
 			//Fetch subordinate users for given manager
 			List<UserSummaryDTO> subordinates;
 	        try {
 	            subordinates = userServiceFeignClient.getSubordinateUsers(manager.userName());
 	        } catch (FeignException ex) {
-	        	System.out.println("Error fetching subordinates for manager {}"+ manager.userName()+","+ ex);
+	        	System.out.println("fetching subordinates for manager {}"+ manager.userName()+","+ ex);
 	            throw new BusinessException("TSMIS_007");
 	        }
 
 	        if (subordinates == null || subordinates.isEmpty()) {
 	            continue;
 	        }
-
 			//Map<EmployeeName, Map<Date, Status>>
 			Map<String, Map<LocalDate, String>> weeklyData = new LinkedHashMap<>();
 
@@ -131,8 +134,12 @@ public class TimesheetMISScheduler {
 
 				Map<LocalDate, String> statusMap = new LinkedHashMap<>();
 				LocalDate day = startDate;
-
+				System.out.println("222222 fetching subordinates for subordinate.userName() {}"+ subordinate.userName());
 				while (!day.isAfter(endDate)) {
+					if (subordinate.userName() == null || subordinate.userName().isBlank()) {
+				        day = day.plusDays(1);
+				        continue;
+				    }
 					List<TimesheetEntryProjection> dayEntries = timesheetEntryService.getAllDateUserWiseOptimizedTimesheetEntries(subordinate.userName(), day, day);
 					statusMap.put(day, dayEntries.isEmpty() ? "Not Filled" : "Filled");
 					day = day.plusDays(1);
@@ -140,8 +147,7 @@ public class TimesheetMISScheduler {
 				weeklyData.put(subordinate.firstName() + " " + subordinate.lastName(), statusMap);
 			}
 
-			String htmlBody = buildWeeklyHtmlMail(startDate, endDate, weeklyData,
-					manager.firstName() + " " + manager.lastName());
+			String htmlBody = buildWeeklyHtmlMail(startDate, endDate, weeklyData,manager.firstName() + " " + manager.lastName());
 			String subject = "Weekly Timesheet Report (" + startDate + " - " + endDate + ")";
 			String[] attachments = { "C:/reports/WeeklyEntry.xlsx" };
 			System.out.println("📧 htmlBody: " + htmlBody);
@@ -162,7 +168,7 @@ public class TimesheetMISScheduler {
 		}
 	}
 	
-	@Scheduled(cron = "0 41 15 * * *")
+	@Scheduled(cron = "0 43 09 * * *")
 	//@Scheduled(cron = "0 30 09 * * MON")//every Monday 9:30 AM
 	public void sendWeeklyTimesheetMis() 
 	{
@@ -212,8 +218,11 @@ public class TimesheetMISScheduler {
 				LocalDate day = startDate;
 
 				while (!day.isAfter(endDate)) {
-					List<TimesheetEntryProjection> dayEntries = timesheetEntryService
-							.getAllDateUserWiseOptimizedTimesheetEntries(subordinate.userName(), day, day);
+					if (subordinate.userName() == null || subordinate.userName().isBlank()) {
+				        day = day.plusDays(1);
+				        continue;
+				    }
+					List<TimesheetEntryProjection> dayEntries = timesheetEntryService.getAllDateUserWiseOptimizedTimesheetEntries(subordinate.userName(), day, day);
 
 					statusMap.put(day, dayEntries.isEmpty() ? "Not Filled" : "Filled");
 					day = day.plusDays(1);
@@ -367,21 +376,464 @@ public class TimesheetMISScheduler {
     }
 	 
 	 private String[] extractEmailsFromSummaryUsers(List<UserSummaryDTO> users) {
-			if (users == null || users.isEmpty()) {
-				System.out.println("⚠️ No users provided to extract emails!");
-				return new String[0];
-			}
-
-			List<String> emailList = users.stream().map(UserSummaryDTO::email)
-					.filter(email -> email != null && !email.isEmpty()).toList();
-
-			if (emailList.isEmpty()) {
-				System.out.println("⚠️ No valid email IDs found in user list!");
-				return new String[0];
-			}
-
-			String[] emailArray = emailList.toArray(new String[0]);
-			System.out.println("✅ Extracted email array: " + Arrays.toString(emailArray));
-			return emailArray;
+		if (users == null || users.isEmpty()) {
+			System.out.println("⚠️ No users provided to extract emails!");
+			return new String[0];
 		}
+
+		List<String> emailList = users.stream().map(UserSummaryDTO::email)
+				.filter(email -> email != null && !email.isEmpty()).toList();
+
+		if (emailList.isEmpty()) {
+			System.out.println("⚠️ No valid email IDs found in user list!");
+			return new String[0];
+		}
+
+		String[] emailArray = emailList.toArray(new String[0]);
+		System.out.println("✅ Extracted email array: " + Arrays.toString(emailArray));
+		return emailArray;
+	}
+	 
+	 @Scheduled(cron = "0 01 16 * * *")
+	//@Scheduled(cron = "0 30 09 * * MON")//every Monday 9:30 AM
+	 public void sendWeeklyAllFunctionHeadTimesheetMis() {
+
+		    LocalDate today = LocalDate.now();
+		    LocalDate startDate = today.minusWeeks(1).with(DayOfWeek.MONDAY);
+		    LocalDate endDate = startDate.plusDays(4);
+
+		    // ========== START HTML BODY ==========
+		    StringBuilder html = new StringBuilder();
+
+		    html.append("<html><body style='font-family:Arial, sans-serif;'>");
+
+		    html.append("<h2 style='color:#2E86C1;border-bottom:3px solid #2E86C1;padding-bottom:6px;'>")
+		        .append("📊 Weekly Timesheet MIS Summary (All Function Heads)")
+		        .append("</h2>");
+
+		    html.append("<p><b>Duration:</b> ").append(startDate).append(" to ").append(endDate).append("</p>");
+
+		    html.append("<table border='1' cellspacing='0' cellpadding='8' style='border-collapse:collapse;width:100%;'>");
+
+		    // table header
+		    html.append("<tr style='background-color:#2E86C1;color:white;text-align:center;font-weight:bold;'>")
+		        .append("<th>Functional Head</th>")
+		        .append("<th>Total Team Members</th>")
+		        .append("<th>Filled Timesheet</th>")
+		        .append("<th>Not Filled Timesheet</th>")
+		        .append("</tr>");
+
+		    // ===== FETCH ALL FUNCTION HEADS =====
+		    List<UserSummaryDTO> allFunctionHeads = userServiceFeignClient.getAllFunctionHead();
+		    //sort alphabetically
+		    allFunctionHeads.sort(Comparator.comparing(h -> (h.firstName() + " " + h.lastName()).toLowerCase()));
+		    
+		    for (UserSummaryDTO manager : allFunctionHeads) {
+
+		        List<UserSummaryDTO> subordinates = userServiceFeignClient.getSubordinateUsers(manager.userName());
+		        if (subordinates == null || subordinates.isEmpty()) continue;
+
+		        int totalMembers = subordinates.size();
+		        int filledCount = 0;
+		        int notFilledCount = 0;
+
+		        List<NotFilledDTO> notFilledList = new ArrayList<>();
+
+		        for (UserSummaryDTO emp : subordinates) {
+
+		            int workingDays = 0;
+		            int filledDays = 0;
+
+		            LocalDate day = startDate;
+
+		            while (!day.isAfter(endDate)) {
+
+		                List<TimesheetEntryProjection> entries =
+		                        timesheetEntryService.getAllDateUserWiseOptimizedTimesheetEntries(
+		                                emp.userName(), day, day);
+
+		                workingDays++;
+		                if (!entries.isEmpty()) filledDays++;
+
+		                day = day.plusDays(1);
+		            }
+
+		            if (filledDays == workingDays) {
+		                filledCount++;
+		            } else {
+		                notFilledCount++;
+
+		                notFilledList.add(
+		                        new NotFilledDTO(
+		                                emp.firstName() + " " + emp.lastName(),
+		                                manager.firstName() + " " + manager.lastName(),
+		                                workingDays,
+		                                filledDays
+		                        )
+		                );
+		            }
+		        }
+
+		        // ---------- hyperlink for popup ----------
+		        String notFilledLink =
+		                "http://localhost:9082/api/timesheetapplication/timesheetmis/not-filled-list"
+		                        + "?head=" + manager.userName()
+		                        + "&from=" + startDate
+		                        + "&to=" + endDate
+		                        + "&headFullName=" + manager.firstName() + " " + manager.lastName();
+
+		        // ---------- add ROW into SAME TABLE ----------
+		        html.append("<tr style='text-align:center;'>")
+		            .append("<td>").append(manager.firstName()).append(" ").append(manager.lastName()).append("</td>")
+		            .append("<td>").append(totalMembers).append("</td>")
+		            .append("<td style='color:green;font-weight:bold;'>").append(filledCount).append("</td>")
+		            .append("<td><a href='").append(notFilledLink)
+		            .append("' style='color:red;font-weight:bold;text-decoration:none;'>")
+		            .append(notFilledCount)
+		            .append("</a></td>")
+		            .append("</tr>");
+		    }
+
+		    //close main table and email body
+		    html.append("</table><br>");
+		    html.append("<p>Regards,<br><b>Timesheet Admin</b></p>");
+		    html.append("</body></html>");
+
+		    String subject = "Weekly Timesheet MIS (" + startDate + " - " + endDate + ")";
+
+		    String htmlBody = html.toString();
+
+		    System.out.println(htmlBody);
+
+			String[] attachments = { "C:/reports/weekly-report.xlsx" };
+			System.out.println("📧 htmlBody: " + htmlBody);
+
+			//Recipients (can be from DB/config)
+			String[] to = { "rkraghuvanshi@vecv.in", "askushwah2@VECV.IN" };
+
+			//BCC recipients
+			String[] bcc = new String[] { "rkraghuvanshi@vecv.in", "askushwah2@VECV.IN" };
+
+			try {
+				mailService.sendMailHTMLFile("idmadmin@VECV.IN", to, subject, htmlBody, attachments, bcc);
+				System.out.println("✅ Weekly MIS Mail sent successfully!");
+			} catch (Exception e) {
+				System.err.println("❌ Error sending Weekly MIS Mail: " + e.getMessage());
+				throw new BusinessException("MIS_008");
+			}
+		}
+
+	 @Scheduled(cron = "0 34 15 * * *")
+	//@Scheduled(cron = "0 30 09 * * MON")//every Monday 9:30 AM
+	 public void sendWeeklyAllFunctionHeadTimesheetMisOLD() {
+		 LocalDate today = LocalDate.now();
+		    LocalDate startDate = today.minusWeeks(1).with(DayOfWeek.MONDAY);
+		    LocalDate endDate = startDate.plusDays(4);   // Monday–Friday
+		    
+		    String htmlBody ="-";
+		    List<UserSummaryDTO> allFunctionHeads = userServiceFeignClient.getAllFunctionHead();
+		    for (UserSummaryDTO manager : allFunctionHeads) {
+		        List<UserSummaryDTO> subordinates = userServiceFeignClient.getSubordinateUsers(manager.userName());
+
+		        if (subordinates == null || subordinates.isEmpty()) continue;
+
+		        int totalMembers = subordinates.size();
+		        int filledCount = 0;
+		        int notFilledCount = 0;
+
+		        List<NotFilledDTO> notFilledList = new ArrayList<>();
+		        for (UserSummaryDTO emp : subordinates) {
+		            int workingDays = 0;
+		            int filledDays = 0;
+		            LocalDate day = startDate;
+		            while (!day.isAfter(endDate)) {
+		                List<TimesheetEntryProjection> entries = timesheetEntryService.getAllDateUserWiseOptimizedTimesheetEntries(emp.userName(), day, day);
+		                workingDays++;
+		                if (!entries.isEmpty()) {
+		                    filledDays++;
+		                }
+		                day = day.plusDays(1);
+		            }
+
+		            if (filledDays == workingDays) {
+		                filledCount++;
+		            } else {
+		                notFilledCount++;
+
+		                notFilledList.add(
+		                        new NotFilledDTO(
+		                                emp.firstName() + " " + emp.lastName(),
+		                                manager.firstName() + " " + manager.lastName(),
+		                                workingDays,
+		                                filledDays
+		                        )
+		                );
+		            }
+		        }
+
+		        htmlBody = buildAllFunctionHeadWeeklyHtmlMIS(
+		                manager.firstName() + " " + manager.lastName(),
+		                totalMembers,
+		                filledCount,
+		                notFilledCount,
+		                notFilledList,
+		                startDate,
+		                endDate,manager.userName()
+		        );
+		        
+		        System.out.println("📧 Weekly Timesheet MIS Mail sent to Manager: " + manager.firstName());
+		    }
+	        String subject = "Weekly Timesheet MIS (" + startDate + " - " + endDate + ")";
+	        //String htmlBody = buildWeeklyHtmlMail(startDate, endDate,
+			//weeklyData,manager.userName());
+			String[] attachments = { "C:/reports/weekly-report.xlsx" };
+
+			System.out.println("📧 htmlBody: " + htmlBody);
+
+			//Recipients (can be from DB/config)
+			String[] to = { "rkraghuvanshi@vecv.in", "askushwah2@VECV.IN" };
+
+			//BCC recipients
+			String[] bcc = new String[] { "rkraghuvanshi@vecv.in", "askushwah2@VECV.IN" };
+
+			try {
+				mailService.sendMailHTMLFile("idmadmin@VECV.IN", to, subject, htmlBody, attachments, bcc);
+				System.out.println("✅ Weekly MIS Mail sent successfully!");
+			} catch (Exception e) {
+				System.err.println("❌ Error sending Weekly MIS Mail: " + e.getMessage());
+				throw new BusinessException("MIS_008");
+			}
+	    //}
+	}
+	 
+ private String buildAllFunctionHeadWeeklyHtmlMIS(
+	        String functionHead,
+	        int totalMembers,
+	        int filled,
+	        int notFilled,
+	        List<NotFilledDTO> notFilledList,
+	        LocalDate start,
+	        LocalDate end,
+	        String functionHeadName) {
+
+	    String notFilledLink =
+	            "http://localhost:9082/api/timesheetapplication/timesheetmis/not-filled-list"
+	            + "?head=" + functionHeadName
+	            + "&from=" + start
+	            + "&to=" + end
+	            + "&headFullName=" + functionHead;
+
+	    StringBuilder html = new StringBuilder();
+
+	    html.append("<html>");
+	    html.append("<body style='font-family:Arial, sans-serif;'>");
+
+	    //Title
+	    html.append("<h2 style='color:#2E86C1; border-bottom:3px solid #2E86C1; padding-bottom:6px;'>")
+	        .append("📊 Weekly Timesheet MIS Summary")
+	        .append("</h2>");
+
+	    //Duration line
+	    html.append("<p><b>Duration:</b> ").append(start).append(" to ").append(end).append("</p>");
+
+	    //Message
+	    html.append("<p><b>Function Head:</b> ").append(functionHead).append("</p>");
+	    html.append("<p>Please find below the weekly MIS summary:</p><br>");
+
+	    //Table
+	    html.append("<table border='1' cellspacing='0' cellpadding='8' ")
+	        .append("style='border-collapse:collapse;width:100%;'>");
+
+	    //Header row
+	    html.append("<tr style='background-color:#2E86C1;color:white;text-align:center;font-weight:bold;'>");
+	    html.append("<th>Functional Head</th>");
+	    html.append("<th>Total Team Members</th>");
+	    html.append("<th>Filled Timesheet</th>");
+	    html.append("<th>Not Filled Timesheet</th>");
+	    html.append("</tr>");
+
+	    //Data row
+	    html.append("<tr style='text-align:center;'>");
+	    html.append("<td>").append(functionHead).append("</td>");
+	    html.append("<td>").append(totalMembers).append("</td>");
+	    html.append("<td style='color:green;font-weight:bold;'>").append(filled).append("</td>");
+
+	    html.append("<td>")
+	        .append("<a href='").append(notFilledLink)
+	        .append("' style='color:red;font-weight:bold;text-decoration:none;'>")
+	        .append(notFilled)
+	        .append("</a></td>");
+
+	    html.append("</tr>");
+	    html.append("</table><br>");
+
+	    // Footer
+	    html.append("<p>Regards,<br><b>Timesheet Admin</b></p>");
+	    html.append("</body></html>");
+
+	    return html.toString();
+	}
+ 
+ @Scheduled(cron = "0 05 15 * * *")
+//@Scheduled(cron = "0 30 09 * * MON")//every Monday 9:30 AM
+ public void sendWeeklyFunctionHeadTimesheetMis() {
+	 LocalDate today = LocalDate.now();
+	    LocalDate startDate = today.minusWeeks(1).with(DayOfWeek.MONDAY);
+	    LocalDate endDate = startDate.plusDays(4);   // Monday–Friday
+
+	    List<UserSummaryDTO> allFunctionHeads = userServiceFeignClient.getAllFunctionHead();
+
+	    for (UserSummaryDTO manager : allFunctionHeads) {
+
+	        List<UserSummaryDTO> subordinates =
+	                userServiceFeignClient.getSubordinateUsers(manager.userName());
+
+	        if (subordinates == null || subordinates.isEmpty()) continue;
+
+	        int totalMembers = subordinates.size();
+	        int filledCount = 0;
+	        int notFilledCount = 0;
+
+	        List<NotFilledDTO> notFilledList = new ArrayList<>();
+
+	        for (UserSummaryDTO emp : subordinates) {
+
+	            int workingDays = 0;
+	            int filledDays = 0;
+
+	            LocalDate day = startDate;
+
+	            while (!day.isAfter(endDate)) {
+
+	                List<TimesheetEntryProjection> entries = timesheetEntryService.getAllDateUserWiseOptimizedTimesheetEntries(emp.userName(), day, day);
+
+	                workingDays++;
+
+	                if (!entries.isEmpty()) {
+	                    filledDays++;
+	                }
+
+	                day = day.plusDays(1);
+	            }
+
+	            if (filledDays == workingDays) {
+	                filledCount++;
+	            } else {
+	                notFilledCount++;
+
+	                notFilledList.add(
+	                        new NotFilledDTO(
+	                                emp.firstName() + " " + emp.lastName(),
+	                                manager.firstName() + " " + manager.lastName(),
+	                                workingDays,
+	                                filledDays
+	                        )
+	                );
+	            }
+	        }
+
+	        String htmlBody = buildFunctionHeadWeeklyHtmlMIS(
+	                manager.firstName() + " " + manager.lastName(),
+	                totalMembers,
+	                filledCount,
+	                notFilledCount,
+	                notFilledList,
+	                startDate,
+	                endDate,manager.userName()
+	        );
+
+        String subject = "Weekly Timesheet MIS (" + startDate + " - " + endDate + ")";
+        System.out.println(htmlBody);
+
+        //String htmlBody = buildWeeklyHtmlMail(startDate, endDate,
+		//weeklyData,manager.userName());
+		String[] attachments = { "C:/reports/weekly-report.xlsx" };
+
+		System.out.println("📧 Weekly Timesheet MIS Mail sent to Manager: " + manager.firstName());
+		System.out.println("📧 htmlBody: " + htmlBody);
+
+		//Recipients (can be from DB/config)
+		String[] to = { "rkraghuvanshi@vecv.in", "askushwah2@VECV.IN" };
+
+		//BCC recipients
+		String[] bcc = new String[] { "rkraghuvanshi@vecv.in", "askushwah2@VECV.IN" };
+
+		try {
+			mailService.sendMailHTMLFile("idmadmin@VECV.IN", to, subject, htmlBody, attachments, bcc);
+			System.out.println("✅ Weekly MIS Mail sent successfully!");
+		} catch (Exception e) {
+			System.err.println("❌ Error sending Weekly MIS Mail: " + e.getMessage());
+			throw new BusinessException("MIS_008");
+		}
+    }
+}
+	 
+private String buildFunctionHeadWeeklyHtmlMIS(
+	        String functionHead,
+	        int totalMembers,
+	        int filled,
+	        int notFilled,
+	        List<NotFilledDTO> notFilledList,
+	        LocalDate start,
+	        LocalDate end,
+	        String functionHeadName) {
+
+	    String notFilledLink =
+	            "http://localhost:9082/api/timesheetapplication/timesheetmis/not-filled-list"
+	            + "?head=" + functionHeadName
+	            + "&from=" + start
+	            + "&to=" + end
+	            + "&headFullName=" + functionHead;
+
+	    StringBuilder html = new StringBuilder();
+
+	    html.append("<html>");
+	    html.append("<body style='font-family:Arial, sans-serif;'>");
+
+	    //Title
+	    html.append("<h2 style='color:#2E86C1; border-bottom:3px solid #2E86C1; padding-bottom:6px;'>")
+	        .append("📊 Weekly Timesheet MIS Summary")
+	        .append("</h2>");
+
+	    //Duration line
+	    html.append("<p><b>Duration:</b> ").append(start).append(" to ").append(end).append("</p>");
+
+	    //Message
+	    html.append("<p><b>Function Head:</b> ").append(functionHead).append("</p>");
+	    html.append("<p>Please find below the weekly MIS summary:</p><br>");
+
+	    //Table
+	    html.append("<table border='1' cellspacing='0' cellpadding='8' ")
+	        .append("style='border-collapse:collapse;width:100%;'>");
+
+	    //Header row
+	    html.append("<tr style='background-color:#2E86C1;color:white;text-align:center;font-weight:bold;'>");
+	    html.append("<th>Functional Head</th>");
+	    html.append("<th>Total Team Members</th>");
+	    html.append("<th>Filled Timesheet</th>");
+	    html.append("<th>Not Filled Timesheet</th>");
+	    html.append("</tr>");
+
+	    //Data row
+	    html.append("<tr style='text-align:center;'>");
+	    html.append("<td>").append(functionHead).append("</td>");
+	    html.append("<td>").append(totalMembers).append("</td>");
+	    html.append("<td style='color:green;font-weight:bold;'>").append(filled).append("</td>");
+
+	    html.append("<td>")
+	        .append("<a href='").append(notFilledLink)
+	        .append("' style='color:red;font-weight:bold;text-decoration:none;'>")
+	        .append(notFilled)
+	        .append("</a></td>");
+
+	    html.append("</tr>");
+	    html.append("</table><br>");
+
+	    // Footer
+	    html.append("<p>Regards,<br><b>Timesheet Admin</b></p>");
+	    html.append("</body></html>");
+
+	    return html.toString();
+	}
+
 }

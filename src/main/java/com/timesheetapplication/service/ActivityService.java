@@ -34,12 +34,22 @@ public class ActivityService {
 	}
 	
 	public List<ActivityDao> getAllActivitys() {
-		List<Activity> activitys = (List<Activity>) activityRepository.findAll();
-		if (activitys.isEmpty()) {
+		List<Activity> activities = (List<Activity>) activityRepository.findAll();
+		if (activities.isEmpty()) {
 			throw new BusinessException("ACT_001");
 		}
-		return activitys.stream().map(a -> new ActivityDao(a.getId(), a.getActivityName(), a.getCategory().getId(), a.getProject().getId()))
-				.collect(Collectors.toList());
+		return activities.stream()
+	            .map(a -> new ActivityDao(
+	                    a.getId(),
+	                    a.getActivityName(),
+
+	                    a.getCategory().getId(),
+	                    a.getCategory().getCategoryName(),
+
+	                    a.getProject().getId(),
+	                    a.getProject().getProjectName()
+	            ))
+	            .collect(Collectors.toList());
 	}
 
 	public Activity getActivityById(Long id) {
@@ -76,7 +86,7 @@ public class ActivityService {
 		activity.setProject(project);
 
 		Activity saved = activityRepository.save(activity);
-		return new ActivityDao(saved.getId(), saved.getActivityName(), category.getId(),project.getId());
+		return new ActivityDao(saved.getId(), saved.getActivityName(), category.getId(), category.getCategoryName(),project.getId(),project.getProjectName());
 	}
 
 	public Activity updateActivity(Long id, Activity updatedActivity) {
