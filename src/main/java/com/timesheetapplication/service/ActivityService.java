@@ -89,33 +89,51 @@ public class ActivityService {
 		return new ActivityDao(saved.getId(), saved.getActivityName(), category.getId(), category.getCategoryName(),project.getId(),project.getProjectName());
 	}
 
-	public Activity updateActivity(Long id, Activity updatedActivity) {
-		if (id == null) {
-			throw new BusinessException("ACT_002");
-		}
+	public ActivityDao updateActivity(Long id, ActivityDao updatedActivity) {
 
-		Activity existing = activityRepository.findById(id)
-				.orElseThrow(() -> new BusinessException("ACT_003",id.toString()));
+	    if (id == null) {
+	        throw new BusinessException("ACT_002");
+	    }
 
-		if (updatedActivity.getActivityName() != null && !updatedActivity.getActivityName().trim().isEmpty()) {
-			existing.setActivityName(updatedActivity.getActivityName());
-		}
+	    Activity existing = activityRepository.findById(id)
+	            .orElseThrow(() -> new BusinessException("ACT_003", id.toString()));
 
-		if (updatedActivity.getCategory() != null) {
-			Long eqId = updatedActivity.getCategory().getId();
-			Category category = categoryRepository.findById(eqId)
-					.orElseThrow(() -> new BusinessException("CAT_002",eqId.toString()));
-			existing.setCategory(category);
-		}
-		
-		if (updatedActivity.getProject() != null) {
-			Long eqId = updatedActivity.getProject().getId();
-			Project project = projectRepository.findById(eqId)
-					.orElseThrow(() -> new BusinessException("PRJ_002",eqId.toString()));
-			existing.setProject(project);
-		}
+	    //Update Activity Name
+	    if (updatedActivity.getActivityName() != null &&
+	        !updatedActivity.getActivityName().trim().isEmpty()) {
 
-		return activityRepository.save(existing);
+	        existing.setActivityName(updatedActivity.getActivityName());
+	    }
+
+	    //Update Category
+	    if (updatedActivity.getCategoryId() != null) {
+	        Category category = categoryRepository.findById(updatedActivity.getCategoryId())
+	                .orElseThrow(() -> new BusinessException(
+	                        "CAT_002",
+	                        updatedActivity.getCategoryId().toString()
+	                ));
+	        existing.setCategory(category);
+	    }
+
+	    //Update Project
+	    if (updatedActivity.getProjectId() != null) {
+	        Project project = projectRepository.findById(updatedActivity.getProjectId())
+	                .orElseThrow(() -> new BusinessException(
+	                        "PRJ_002",
+	                        updatedActivity.getProjectId().toString()
+	                ));
+	        existing.setProject(project);
+	    }
+
+	    Activity saved = activityRepository.save(existing);
+
+	    //Convert Entity → DAO (RETURN TYPE)
+	    return new ActivityDao(
+	            saved.getId(),
+	            saved.getActivityName(),
+	            saved.getCategory().getId(),
+	            saved.getProject().getId()
+	    );
 	}
 
 	public void deleteActivity(Long id) {

@@ -25,6 +25,13 @@ public class ActivityDao {
         this.projectId = projectId;
         this.projectName = projectName;
     }
+    
+    public ActivityDao(Long id, String activityName, Long categoryId, Long projectId) {
+        this.id = id;
+        this.activityName = activityName;
+        this.categoryId = categoryId;
+        this.projectId = projectId;
+    }
 
     public Long getId() {
         return id;

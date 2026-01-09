@@ -43,10 +43,10 @@ public class ActivityController {
 		return ResponseEntity.status(HttpStatus.CREATED).body(saved);
 	}
 
-	@PutMapping("/activitys/{id}")
-	public ResponseEntity<Activity> updateActivity(@PathVariable("id") Long id, @RequestBody Activity activity) {
-		Activity updated = activityService.updateActivity(id, activity);
-		return ResponseEntity.ok(updated);
+	@PutMapping("/activities/{id}")
+	public ResponseEntity<ActivityDao> updateActivity(@PathVariable("id") Long id,@RequestBody ActivityDao activityDao) {
+	    ActivityDao updated = activityService.updateActivity(id, activityDao);
+	    return ResponseEntity.ok(updated);
 	}
 
 	@DeleteMapping("/activitys/{id}")
