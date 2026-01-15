@@ -9,6 +9,8 @@ public interface HolidayMasterService {
 
     HolidayMaster createHoliday(HolidayMaster holiday);
 
+	HolidayMaster updateHoliday(Long id, HolidayMaster holiday);
+
     HolidayMaster getHolidayByDate(LocalDate date);
 
     List<HolidayMaster> getAllActiveHolidays();
