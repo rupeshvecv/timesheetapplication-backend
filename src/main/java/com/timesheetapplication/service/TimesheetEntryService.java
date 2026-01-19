@@ -91,6 +91,7 @@ public class TimesheetEntryService {
 	
 	public List<TimesheetEntryProjection> getAllDateUserWiseOptimizedTimesheetEntries(String user, LocalDate startEntryDate, LocalDate endEntryDate) {
         //return timesheetEntryRepository.findAllDateUserWiseOptimizedTimesheetEntries(user, startEntryDate, endEntryDate);
+		//System.out.println("TimesheetEntryService.getAllDateUserWiseOptimizedTimesheetEntries(user) "+user+" ::startEntryDate:: "+startEntryDate+" :endEntryDate: "+endEntryDate);
 		//1️.Validate inputs
 	    if (user == null || user.isBlank()) {
 	        throw new BusinessException("TS_002");
@@ -108,9 +109,9 @@ public class TimesheetEntryService {
 	    List<TimesheetEntryProjection> userwiseTSResult = timesheetEntryRepository.findAllDateUserWiseOptimizedTimesheetEntries(user, startEntryDate, endEntryDate);
 
 	    //3.Handle no data found
-	    if (userwiseTSResult == null || userwiseTSResult.isEmpty()) {
+	    /*if (userwiseTSResult == null || userwiseTSResult.isEmpty()) {
 	        throw new BusinessException("TS_014",user,startEntryDate,endEntryDate);
-	    }
+	    }*/
 
 	    return userwiseTSResult;
     }
