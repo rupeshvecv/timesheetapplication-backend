@@ -394,7 +394,8 @@ public class TimesheetMISScheduler {
 		return emailArray;
 	}
 	 
-	 @Scheduled(cron = "0 01 16 * * *")
+	 @Scheduled(cron = "0 44 11 * * *")
+	 //@Scheduled(cron = "0 01 16 * * *")
 	//@Scheduled(cron = "0 30 09 * * MON")//every Monday 9:30 AM
 	 public void sendWeeklyAllFunctionHeadTimesheetMis() {
 
