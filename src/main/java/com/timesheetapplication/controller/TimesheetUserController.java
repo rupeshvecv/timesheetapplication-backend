@@ -1,5 +1,6 @@
 package com.timesheetapplication.controller;
 
+import com.timesheetapplication.dto.DepartmentDTO;
 import com.timesheetapplication.dto.UserSummaryDTO;
 import com.timesheetapplication.service.TimesheetUserService;
 
@@ -65,6 +66,26 @@ public class TimesheetUserController {
     @GetMapping("/allusers")
     public List<UserSummaryDTO> getAllOptimizedUsers(){
         return timesheetUserService.fetchAllOptimizedUsers();
+    }
+    
+    @GetMapping("/allpddusers")
+    public List<UserSummaryDTO> getAllOptimizedPDDUsers(){
+        return timesheetUserService.fetchAllOptimizedPDDUsers();
+    }
+    
+    @GetMapping("/functionhead")
+    public List<UserSummaryDTO> getAllFunctionHead(){
+        return timesheetUserService.fetchAllFunctionHead();
+    }
+    
+    @GetMapping("/departments")
+    public List<DepartmentDTO> getDepartments(){
+        return timesheetUserService.fetchAllDepartments();
+    }
+    
+    @GetMapping("/pdddepartments")
+    public List<DepartmentDTO> getPDDDepartments(){
+        return timesheetUserService.fetchAllPDDDepartments();
     }
     
 }

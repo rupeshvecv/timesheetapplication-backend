@@ -1,5 +1,8 @@
 package com.timesheetapplication.dto;
 
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
+
 import com.timesheetapplication.dao.ActivityDao;
 import com.timesheetapplication.dao.ProjectDao;
 import com.timesheetapplication.model.Activity;
@@ -12,6 +15,8 @@ public class MapperUtil {
 
     // --------------------- PROJECT → DTO -------------------------
     public static ProjectDao toProjectDto(Project p) {
+        if (p == null) return null;
+        
         ProjectDao d = new ProjectDao();
         d.setId(p.getId());
         d.setProjectName(p.getProjectName());
@@ -22,6 +27,8 @@ public class MapperUtil {
 
     // --------------------- ACTIVITY → DTO -------------------------
     public static ActivityDao toActivityDto(Activity a) {
+        if (a == null) return null;
+
         ActivityDao d = new ActivityDao();
         d.setId(a.getId());
         d.setActivityName(a.getActivityName());
@@ -31,27 +38,21 @@ public class MapperUtil {
     }
 
     // --------------------- DTO → ENTITY (no associations) -------------------------
-    /**
-     * Converts DTO -> TimesheetEntry without attempting to create relationship stubs.
-     * After calling this, resolve associations in service layer and set them on the returned entity.
-     */
     public static TimesheetEntry toEntity(TimesheetEntryDto dto) {
+        if (dto == null) return null;
+
         TimesheetEntry t = new TimesheetEntry();
-
-        t.setId(dto.getId());
-        t.setTime(dto.getTime());
-        t.setEntryDate(dto.getEntryDate());
-        t.setHours(dto.getHours());
-        t.setUserName(dto.getUserName());
-        t.setDetails(dto.getDetails());
-        t.setRaisedOn(dto.getRaisedOn());
+        TimesheetRowDto rd = new TimesheetRowDto();
         
-        System.out.println("MapperUtil.toEntity(dto.getHours()) "+dto.getHours());
-        System.out.println("MapperUtil.toEntity(dto.getUserName()) "+dto.getUserName());
-        System.out.println("MapperUtil.toEntity(dto.getTime()) "+dto.getTime());
-
-        //NOTE: do NOT instantiate new Category(id) / Platform(id) here.
-        //Leave associations null — resolve them in the service layer before saving.
+        t.setId(dto.getId());
+        t.setTime(LocalTime.now());
+        t.setEntryDate(dto.getEntryDate());
+        t.setHours(rd.getHours());
+        t.setUserName(dto.getUserName());
+        t.setRaisedOn(dto.getRaisedOn());
+        t.setDetails(rd.getDetails());
+        
+        //Associations are resolved at service layer
         t.setCategory(null);
         t.setPlatform(null);
         t.setProject(null);
@@ -60,11 +61,7 @@ public class MapperUtil {
         return t;
     }
 
-    // --------------------- DTO -> ENTITY (with resolved associations) -------------------------
-    /**
-     * Use this when you already have resolved Category/Platform/Project/Activity objects
-     * (fetched from repositories). This is the recommended method before saving to DB.
-     */
+    // --------------------- DTO → ENTITY (with associations) -------------------------
     public static TimesheetEntry toEntityWithAssociations(
             TimesheetEntryDto dto,
             Category category,
@@ -84,23 +81,26 @@ public class MapperUtil {
 
     // --------------------- ENTITY → DTO -------------------------
     public static TimesheetEntryDto toDto(TimesheetEntry e) {
-        TimesheetEntryDto d = new TimesheetEntryDto();
+        if (e == null) return null;
 
-        System.out.println("MapperUtil.toDto(e.getHours()) "+e.getHours());
-        System.out.println("MapperUtil.toDto(e.getUserName()) "+e.getUserName());
-        System.out.println("MapperUtil.toDto(e.getTime()) "+e.getTime());
+        TimesheetEntryDto d = new TimesheetEntryDto();
+        TimesheetRowDto rd = new TimesheetRowDto();
+        
         d.setId(e.getId());
         d.setEntryDate(e.getEntryDate());
-        d.setTime(e.getTime());
-        d.setHours(e.getHours());
+        if (e.getTime() != null) {
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("hh:mm a");
+            d.setTime(e.getTime().format(formatter));
+        }
+        rd.setHours(e.getHours());
         d.setUserName(e.getUserName());
-        d.setDetails(e.getDetails());
         d.setRaisedOn(e.getRaisedOn());
+        rd.setDetails(e.getDetails());
 
-        d.setCategoryId(e.getCategory() != null ? e.getCategory().getId() : null);
-        d.setPlatformId(e.getPlatform() != null ? e.getPlatform().getId() : null);
-        d.setProjectId(e.getProject() != null ? e.getProject().getId() : null);
-        d.setActivityId(e.getActivity() != null ? e.getActivity().getId() : null);
+        rd.setCategoryId(e.getCategory() != null ? e.getCategory().getId() : null);
+        rd.setPlatformId(e.getPlatform() != null ? e.getPlatform().getId() : null);
+        rd.setProjectId(e.getProject() != null ? e.getProject().getId() : null);
+        rd.setActivityId(e.getActivity() != null ? e.getActivity().getId() : null);
 
         return d;
     }

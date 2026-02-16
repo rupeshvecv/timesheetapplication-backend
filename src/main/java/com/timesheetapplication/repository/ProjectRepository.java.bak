@@ -12,8 +12,7 @@ public interface ProjectRepository extends JpaRepository<Project, Long> {
     List<Project> findByCategoryId(Long categoryId);
     List<Project> findByPlatformIdAndCategoryId(Long platformId, Long categoryId);
     
-    //@Query("SELECT p.projectName FROM Project p WHERE p.status = 'ACTIVE' ORDER BY p.projectName")
-    @Query("SELECT p.projectName FROM Project p WHERE p.status = 'ACTIVE' ORDER BY p.projectStartDate ASC")
+    @Query("SELECT p.projectName FROM Project p WHERE p.status = 'ACTIVE' ORDER BY p.projectName")
     List<String> findAllActiveProjectNames();
 
 }

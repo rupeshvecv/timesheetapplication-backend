@@ -1,20 +1,27 @@
 package com.timesheetapplication.service;
 
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.timesheetapplication.client.UserServiceFeignClient;
 import com.timesheetapplication.dto.UserSummaryDTO;
+import com.timesheetapplication.exception.BusinessException;
+import com.timesheetapplication.projection.TimesheetFillingReportImpl;
 import com.timesheetapplication.projection.TimesheetFillingReportProjection;
 import com.timesheetapplication.repository.ProjectRepository;
 import com.timesheetapplication.repository.TimesheetEntryRepository;
+
+import feign.FeignException;
 
 @Service
 public class TimesheetReportService {
@@ -43,11 +50,57 @@ public class TimesheetReportService {
 	}
 
 	public String getDepartmentByUser(String username) {
-		return userFeignClient.getDepartmentByUsername(username);
+		//return userFeignClient.getDepartmentByUsername(username);
+		//1️.Validate input
+	    if (username == null || username.isBlank()) {
+	        throw new BusinessException("USR_001");
+	    }
+
+	    try {
+	        String department = userFeignClient.getDepartmentByUsername(username);
+
+	        //2️.Handle empty response
+	        if (department == null || department.isBlank()) {
+	            throw new BusinessException("USR_002", username);
+	        }
+
+	        return department;
+
+	    } catch (FeignException.NotFound ex) {
+	        //3️.User not found in user-service
+	    	throw new BusinessException("USR_002", username);
+
+	    } catch (FeignException ex) {
+	        //4️.User service down / timeout / 5xx
+	    	throw new BusinessException("USR_003");
+	    }
 	}
 
 	public String getEmpCodeByUser(String username) {
-		return userFeignClient.getEmpCodeByUsername(username);
+		//return userFeignClient.getEmpCodeByUsername(username);
+		//1️.Input validation
+	    if (username == null || username.isBlank()) {
+	        throw new BusinessException("USR_001");
+	    }
+
+	    try {
+	        String empCode = userFeignClient.getEmpCodeByUsername(username);
+
+	        //2️.Handle empty response
+	        if (empCode == null || empCode.isBlank()) {
+	            throw new BusinessException("USR_004", username);
+	        }
+
+	        return empCode;
+
+	    } catch (FeignException.NotFound ex) {
+	        //3️.User not found in user-service
+	        throw new BusinessException("USR_004", username);
+
+	    } catch (FeignException ex) {
+	        //4️.User service down / timeout / 5xx
+	        throw new BusinessException("USR_003");
+	    }
 	}
 
 	public List<Map<String, Object>> generateDynamicPivot(LocalDate start, LocalDate end, String username,
@@ -72,7 +125,7 @@ public class TimesheetReportService {
 			uRow.put("Total", ((Double) uRow.getOrDefault("Total", 0.0)) + hours);
 		}
 
-		// add zero where missing
+		//add zero where missing
 		for (Map<String, Object> map : pivot.values()) {
 			for (String proj : projectNames) {
 				map.putIfAbsent(proj, 0.0);
@@ -86,8 +139,11 @@ public class TimesheetReportService {
 			List<String> projectNames) {
 		Map<String, Map<String, Object>> userRows = new TreeMap<>(); // TreeMap to sort ascending
 
+		//3️.Initialize user rows with zero values
 		for (UserSummaryDTO user : allUsers) {
 			Map<String, Object> row = new LinkedHashMap<>();
+			// row.put("UserName", user.userName());
+			row.put("UserName", user.firstName() + " " + user.lastName());
 			// row.put("UserName", user.userName());
 			row.put("UserName", user.firstName() + " " + user.lastName());
 			row.put("EmpCode", user.empCode());
@@ -102,6 +158,7 @@ public class TimesheetReportService {
 			userRows.put(user.userName(), row);
 		}
 
+		//4️.Fill actual hours
 		for (Object[] record : rawData) {
 			String username = (String) record[0];
 			String projectName = (String) record[1];
@@ -113,7 +170,6 @@ public class TimesheetReportService {
 				row.put("Total", ((Double) row.get("Total")) + hours);
 			}
 		}
-
 		return new ArrayList<>(userRows.values()); // sorted by username
 	}
 

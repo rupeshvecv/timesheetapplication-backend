@@ -4,6 +4,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -85,9 +86,32 @@ public class TimesheetReportController {
                 .body(new InputStreamResource(excelFile));
     }
     
+    @GetMapping("/timesheetFilledUserExcel/allusers")
+    public ResponseEntity<InputStreamResource> exportReportToFilledUserExcelPDD(
+            @RequestParam LocalDate startDate,
+            @RequestParam LocalDate endDate) throws IOException {
+
+        List<TimesheetFillingReportProjection> report = timesheetReportService.getTimesheetFilledUserReportForAllPDD(startDate, endDate);
+
+        ByteArrayInputStream excelFile = excelGenerator.exportReportToFilledUserExcel(report);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Content-Disposition","attachment; filename=Timesheet_Filling_Report_all_users.xlsx");
+
+        return ResponseEntity.ok()
+                .headers(headers)
+                .contentType(
+                  MediaType.parseMediaType(
+                   "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
+                .body(new InputStreamResource(excelFile));
+    }
+    
     @GetMapping("/timesheetUserProject")
     public ResponseEntity<List<Map<String, Object>>> getTimesheetUserProject(
             @RequestParam LocalDate startDate,
+            @RequestParam LocalDate endDate,
+            @RequestParam(required = false) String userName,
+            @RequestParam(required = false) String projectName) {
             @RequestParam LocalDate endDate,
             @RequestParam(required = false) String userName,
             @RequestParam(required = false) String projectName) {
@@ -103,6 +127,9 @@ public class TimesheetReportController {
     @GetMapping("/timesheetUserProjectExcel")
     public ResponseEntity<InputStreamResource> exportReportToUserProjectExcel(
             @RequestParam LocalDate startDate,
+            @RequestParam LocalDate endDate,
+            @RequestParam(required = false) String userName,
+            @RequestParam(required = false) String projectName) throws IOException {
             @RequestParam LocalDate endDate,
             @RequestParam(required = false) String userName,
             @RequestParam(required = false) String projectName) throws IOException {

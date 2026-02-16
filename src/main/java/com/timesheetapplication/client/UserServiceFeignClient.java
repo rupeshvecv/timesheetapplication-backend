@@ -5,6 +5,8 @@ import java.util.List;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+
+import com.timesheetapplication.dto.DepartmentDTO;
 import com.timesheetapplication.dto.UserSummaryDTO;
 
 @FeignClient(
@@ -31,4 +33,17 @@ public interface UserServiceFeignClient {
     
     @GetMapping("/api/empoweredge/allusers")
     List<UserSummaryDTO> getAllOptimizedUsers();
+    
+    @GetMapping("/api/empoweredge/allpddusers")
+    List<UserSummaryDTO> getAllOptimizedPDDUsers();
+    
+    @GetMapping("/api/empoweredge/functionhead")
+    List<UserSummaryDTO> getAllFunctionHead();
+    
+    @GetMapping("/api/empoweredge/departments")
+    List<DepartmentDTO> getDepartments();
+    
+    @GetMapping("/api/empoweredge/pdddepartments")
+    List<DepartmentDTO> getPDDDepartments();
+    
 }
