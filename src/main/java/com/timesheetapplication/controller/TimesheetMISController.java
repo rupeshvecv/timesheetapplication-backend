@@ -1,7 +1,9 @@
 package com.timesheetapplication.controller;
 
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +16,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import com.timesheetapplication.client.UserServiceFeignClient;
 import com.timesheetapplication.dto.NotFilledDTO;
 import com.timesheetapplication.dto.UserSummaryDTO;
+import com.timesheetapplication.exception.BusinessException;
 import com.timesheetapplication.projection.TimesheetEntryProjection;
 import com.timesheetapplication.service.TimesheetEntryService;
 
@@ -135,6 +138,68 @@ public class TimesheetMISController {
         html.append("</body></html>");
 
         return html.toString();
+    }
+    
+    @GetMapping("/functionHeadTimesheetDetails")
+    @ResponseBody
+    public List<NotFilledDTO> getAllFunctionHeadTimesheetDetails(
+            @RequestParam LocalDate from,
+            @RequestParam LocalDate to) {
+
+        LocalDate startDate = from;
+        LocalDate endDate = to;
+
+        // Final result list for ALL function heads
+        List<NotFilledDTO> result = new ArrayList<>();
+
+        // ===== FETCH ALL FUNCTION HEADS =====
+        List<UserSummaryDTO> allFunctionHeads = userServiceFeignClient.getAllFunctionHead();
+        // sort alphabetically by full name
+        allFunctionHeads.sort(
+                Comparator.comparing(h -> (h.firstName() + " " + h.lastName()).toLowerCase())
+        );
+
+        for (UserSummaryDTO manager : allFunctionHeads) {
+
+            List<UserSummaryDTO> subordinates = userServiceFeignClient.getSubordinateUsers(manager.userName());
+            if (subordinates == null || subordinates.isEmpty()) continue;
+
+            for (UserSummaryDTO emp : subordinates) {
+
+                int workingDays = 0;
+                int filledDays = 0;
+
+                LocalDate day = startDate;
+
+                while (!day.isAfter(endDate)) {
+
+                    List<TimesheetEntryProjection> entries =
+                            timesheetEntryService.getAllDateUserWiseOptimizedTimesheetEntries(
+                                    emp.userName(), day, day);
+
+                    workingDays++;
+                    if (!entries.isEmpty()) {
+                        filledDays++;
+                    }
+
+                    day = day.plusDays(1);
+                }
+
+                // If not fully filled, add to result
+                if (filledDays != workingDays) {
+                    result.add(
+                            new NotFilledDTO(
+                                    emp.firstName() + " " + emp.lastName(),          // employee
+                                    manager.firstName() + " " + manager.lastName(),   // function head
+                                    workingDays,
+                                    filledDays
+                            )
+                    );
+                }
+            }
+        }
+        //Return NOT FILLED details for ALL function heads
+        return result;
     }
 
 }
